@@ -2856,34 +2856,50 @@
     }
 
     async function loadDashboardStats() {
-        try {
-            const res = await fetch('/api/stats');
-            const data = await res.json();
-            document.getElementById('statTotalNfts').innerText = data.totalNfts || 0;
-            document.getElementById('statListedNfts').innerText = data.listedNfts || 0;
-            if (document.getElementById('statTotalSales')) {
-                document.getElementById('statTotalSales').innerText = data.totalSales || 0;
-            }
-            if (document.getElementById('statActiveAuctions')) {
-                document.getElementById('statActiveAuctions').innerText = data.activeAuctions || 0;
-            }
-            
-            // Load user balances (ETH and WETH)
-            loadUserBalances();
-            
-            // Load transactions for dashboard if not already loaded
-            if (transactions.length === 0) {
-                const txRes = await fetch('/api/transactions');
-                const txData = await txRes.json();
-                transactions = txData.transactions || [];
-            }
-            renderDashboardTransactions();
-            
-            // Load NFTs for dashboard display
-            await loadDashboardNfts();
-        } catch (err) {
-            console.error('Failed to load stats:', err);
-        }
+      try {
+    const res = await fetch('/api/stats', {
+        credentials: 'include', // ✅ IMPORTANT
+    });
+
+    if (!res.ok) throw new Error('Failed to fetch stats');
+
+    const data = await res.json();
+
+    document.getElementById('statTotalNfts').innerText = data.totalNfts || 0;
+    document.getElementById('statListedNfts').innerText = data.listedNfts || 0;
+
+    if (document.getElementById('statTotalSales')) {
+        document.getElementById('statTotalSales').innerText = data.totalSales || 0;
+    }
+
+    if (document.getElementById('statActiveAuctions')) {
+        document.getElementById('statActiveAuctions').innerText = data.activeAuctions || 0;
+    }
+
+    // Load user balances (ETH and WETH)
+    await loadUserBalances();
+
+    // Load transactions for dashboard if not already loaded
+    if (transactions.length === 0) {
+        const txRes = await fetch('/api/transactions', {
+            credentials: 'include', // ✅ REQUIRED
+        });
+
+        if (!txRes.ok) throw new Error('Failed to fetch transactions');
+
+        const txData = await txRes.json();
+        transactions = txData.transactions || [];
+    }
+
+    renderDashboardTransactions();
+
+    // Load NFTs for dashboard display
+    await loadDashboardNfts();
+
+} catch (err) {
+    console.error('Failed to load stats:', err);
+}
+
     }
 
     let dashboardNftFilter = 'listed';

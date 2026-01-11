@@ -580,6 +580,7 @@ export async function registerRoutes(
 
   // ===== DASHBOARD STATS =====
   app.get('/api/stats', async (_req: Request, res: Response) => {
+    const userId = _req.session.userId;
     try {
       const [
         totalNfts,
@@ -591,12 +592,12 @@ export async function registerRoutes(
         activeExhibitions,
       ] = await Promise.all([
         NFT.countDocuments(),
-        NFT.countDocuments({ status: 'listed' }),
-        NFT.countDocuments({ status: 'owned' }),
-        Sale.countDocuments({ status: 'sold' }),
-        Auction.countDocuments({ status: 'active' }),
+        NFT.countDocuments({owner: userId, status: 'listed' }),
+        NFT.countDocuments({owner: userId, status: 'owned' }),
+        Sale.countDocuments({ owner: userId,status: 'sold' }),
+        Auction.countDocuments({ owner: userId,status: 'active' }),
         Exhibition.countDocuments(),
-        Exhibition.countDocuments({ status: 'active' }),
+        Exhibition.countDocuments({ owner: userId,status: 'active' }),
       ]);
 
       const salesVolume = await Sale.aggregate([
