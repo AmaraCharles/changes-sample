@@ -4,6 +4,7 @@ import path from "path";
 import fs from "fs";
 import { connectMongoDB } from "./mongodb";
 import session from "express-session";
+ import  UsersDatabase  from "./models/User";
 // ✅ FIX: CommonJS-safe directory resolution
 const __dirname = process.cwd();
 
@@ -581,6 +582,19 @@ export async function registerRoutes(
   // ===== DASHBOARD STATS =====
   app.get('/api/stats', async (req: Request, res: Response) => {
     const userId = req.session.userId;
+
+    const user = await UsersDatabase.findOne({ userId });
+
+  if (!user) {
+    res.status(404).json({
+      success: false,
+      status: 404,
+      message: "User not found",
+    });
+
+    return;
+  }
+
     try {
       const [
         totalNfts,
@@ -592,10 +606,10 @@ export async function registerRoutes(
         activeExhibitions,
       ] = await Promise.all([
         NFT.countDocuments(),
-        NFT.countDocuments({owner: userId, status: 'listed' }),
-        NFT.countDocuments({owner: userId, status: 'owned' }),
-        Sale.countDocuments({ owner: userId,status: 'sold' }),
-        Auction.countDocuments({ owner: userId,status: 'active' }),
+        NFT.countDocuments({owner: user.email, status: 'listed' }),
+        NFT.countDocuments({owner: user.email, status: 'owned' }),
+        Sale.countDocuments({ owner: user.email,status: 'sold' }),
+        Auction.countDocuments({ owner: user.email,status: 'active' }),
         Exhibition.countDocuments(),
         Exhibition.countDocuments({ owner: userId,status: 'active' }),
       ]);
