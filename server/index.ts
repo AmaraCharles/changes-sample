@@ -30,26 +30,27 @@ app.use(cors({
 //     maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
 //   }
 // }));
+app.set("trust proxy", 1); // REQUIRED in prod
+
 app.use(
   session({
-    name:"setson",
-    secret: process.env.SESSION_SECRET || "devSecret123",
+    name: "setson",
+    secret: process.env.SESSION_SECRET!,
     resave: false,
     saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: process.env.MONGODB_URI, // ✅ must be valid
-    }),
-   cookie: {
-  path: "/",
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 1 day
-  httpOnly: true,
-  secure:true,
-  sameSite:'none',
-}
 
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGODB_URI!,
+    }),
+
+    cookie: {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    },
   })
 );
-
 declare module "http" {
   interface IncomingMessage {
     rawBody: unknown;
