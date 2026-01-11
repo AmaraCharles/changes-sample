@@ -579,8 +579,8 @@ export async function registerRoutes(
   });
 
   // ===== DASHBOARD STATS =====
-  app.get('/api/stats', async (_req: Request, res: Response) => {
-    const userId = _req.session.userId;
+  app.get('/api/stats', async (req: Request, res: Response) => {
+    const userId = req.session.userId;
     try {
       const [
         totalNfts,
