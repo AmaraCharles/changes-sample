@@ -3362,20 +3362,23 @@
     let currentTransactionFilter = 'all';
     
     async function loadTransactions() {
-        try {
-            const res = await fetch('/api/transactions', {
-            credentials: 'include', // ✅ REQUIRED
+    try {
+        const res = await fetch('/api/transactions', {
+            credentials: 'include', // ✅ REQUIRED for session cookies
         });
 
-        if (res.ok) throw new Error('Failed to fetch transactions');
-
-            const data = await res.json();
-            transactions = data.transactions || [];
-            renderTransactions(data.stats);
-        } catch (err) {
-            console.error('Failed to load transactions:', err);
+        // ❌ throw ONLY if response is NOT OK
+        if (!res.ok) {
+            throw new Error(`Failed to fetch transactions (${res.status})`);
         }
+
+        const data = await res.json();
+        transactions = data.transactions || [];
+        renderTransactions(data.stats);
+    } catch (err) {
+        console.error('Failed to load transactions:', err);
     }
+}
 
     function renderTransactions(stats) {
         if (stats) {
