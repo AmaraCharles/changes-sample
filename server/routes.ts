@@ -615,15 +615,15 @@ export async function registerRoutes(
       ]);
 
       const salesVolume = await Sale.aggregate([
-        { $match: { status: 'sold' } },
+        { $match: { owner: user.email,status: 'sold' } },
         { $group: { _id: null, total: { $sum: '$price' } } }
       ]);
 const listedVolume = await NFT.aggregate([
-        { $match: { status: 'listed' } },
+        { $match: { owner: user.email,status: 'listed' } },
         { $group: { _id: null, total: { $sum: '$price' } } }
       ]);
       const avgSalePrice = await Sale.aggregate([
-        { $match: { status: 'sold' } },
+        { $match: { owner: user.email,status: 'sold' } },
         { $group: { _id: null, avg: { $avg: '$price' } } }
       ]);
 
