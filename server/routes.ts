@@ -605,7 +605,7 @@ export async function registerRoutes(
         totalExhibitions,
         activeExhibitions,
       ] = await Promise.all([
-        NFT.countDocuments(),
+        NFT.countDocuments({owner: user.email}),
         NFT.countDocuments({owner: user.email, status: 'listed' }),
         NFT.countDocuments({owner: user.email, status: 'owned' }),
         Sale.countDocuments({ owner: user.email,status: 'sold' }),
