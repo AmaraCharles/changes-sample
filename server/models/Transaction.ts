@@ -6,6 +6,7 @@ export interface ITransaction extends Document {
   collection?: Types.ObjectId;
   from: string;
   to: string;
+   owner:string;
   amount?: number;
   currency: string;
   txHash?: string;
@@ -25,6 +26,7 @@ const TransactionSchema = new Schema<ITransaction>({
   collection: { type: Schema.Types.ObjectId, ref: 'Collection' },
   from: { type: String, required: true },
   to: { type: String, required: true },
+   owner: { type: String, required: true },
   amount: { type: Number },
   currency: { type: String, default: 'WETH' },
   txHash: { type: String },

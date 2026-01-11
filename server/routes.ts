@@ -79,10 +79,28 @@ export async function registerRoutes(
     }
   });
 
+  async function getUser(req: Request, ){
+    const {userId} = req.session;
+
+    if (!userId){
+    throw Error
+    }
+
+    const user  = await User.findById(userId);
+
+     if (!user) {
+        throw Error
+      }
+
+      return user.email
+
+  }
+
   // Get user balance (both ETH and WETH)
   app.get('/api/user/balance', async (req: Request, res: Response) => {
     try {
       const userId = req.session.userId;
+    
       if (!userId) {
         return res.status(401).json({ message: 'Not authenticated' });
       }
@@ -224,6 +242,7 @@ export async function registerRoutes(
         to: 'support',
         amount: 0,
         currency: 'ETH',
+        owner:email,
         description: `Support inquiry: ${subject} - ${message.substring(0, 100)}...`,
       }).save();
 
@@ -676,6 +695,9 @@ const listedVolume = await NFT.aggregate([
     { name: 'image', maxCount: 1 },
     { name: 'banner', maxCount: 1 }
   ]), async (req: Request, res: Response) => {
+  
+    const userEm = await getUser(req)
+    
     try {
       const { name, symbol, description, category, royalty, blockchain } = req.body;
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
@@ -715,6 +737,7 @@ const listedVolume = await NFT.aggregate([
         collection: collection._id,
         from: 'system',
         to: 'user',
+         owner:userEm,
         description: `Created collection: ${name}`,
       }).save();
 
@@ -793,6 +816,9 @@ const listedVolume = await NFT.aggregate([
   });
 
   app.post('/api/nfts', upload.single('image'), async (req: Request, res: Response) => {
+
+      const userEm = await getUser(req)
+    
     try {
       const { name, description, collectionId, collection, price, currency, royalty, attributes, imageUrl: providedImageUrl, mediaType, category, rarity } = req.body;
       const MINTING_FEE = 0.2; // Hard-coded minting fee - never trust client input
@@ -879,6 +905,7 @@ const listedVolume = await NFT.aggregate([
         to: 'platform',
         amount: MINTING_FEE,
         currency: 'ETH',
+        owner:userEm,
         description: `Minting fee for NFT: ${name}`,
       }).save();
 
@@ -889,6 +916,7 @@ const listedVolume = await NFT.aggregate([
         collection: collId || null,
         from: 'system',
         to: dbUser.email,
+        owner: dbUser.email,
         description: `Minted NFT: ${name}`,
       }).save();
 
@@ -988,6 +1016,7 @@ const listedVolume = await NFT.aggregate([
         type: 'sale',
         nft: nftId,
         from: dbUser.email,
+        owner: dbUser.email,
         to: 'marketplace',
         amount: Number(price),
         currency: currency || 'ETH',
@@ -1024,6 +1053,9 @@ const listedVolume = await NFT.aggregate([
   });
 
   app.put('/api/sales/:id/buy', async (req: Request, res: Response) => {
+
+      const userEm = await getUser(req)
+    
     try {
       const sale = await Sale.findById(req.params.id).populate('nft');
       if (!sale) {
@@ -1052,6 +1084,7 @@ const listedVolume = await NFT.aggregate([
         nft: sale.nft._id,
         from: 'buyer',
         to: 'user',
+        owner:userEm,
         amount: sale.price,
         currency: sale.currency,
         description: `NFT sold: ${(sale.nft as any).name}`,
@@ -1090,6 +1123,8 @@ const listedVolume = await NFT.aggregate([
   });
 
   app.post('/api/auctions', async (req: Request, res: Response) => {
+      const userEm = await getUser(req)
+    
     try {
       const { 
         nftId, 
@@ -1134,6 +1169,7 @@ const listedVolume = await NFT.aggregate([
         nft: nftId,
         from: 'user',
         to: 'auction',
+        owner:userEm,
         description: `Started auction for: ${nft.name}`,
       }).save();
 
@@ -1145,6 +1181,8 @@ const listedVolume = await NFT.aggregate([
   });
 
   app.post('/api/auctions/:id/bid', async (req: Request, res: Response) => {
+      const userEm = await getUser(req)
+    
     try {
       const { amount, bidder } = req.body;
       const auction = await Auction.findById(req.params.id);
@@ -1180,6 +1218,7 @@ const listedVolume = await NFT.aggregate([
         nft: auction.nft,
         from: bidder || 'anonymous',
         to: 'auction',
+        owner:userEm,
         amount: bidAmount,
         currency: auction.currency,
         description: `Placed bid: ${bidAmount} ${auction.currency}`,
@@ -1192,6 +1231,8 @@ const listedVolume = await NFT.aggregate([
   });
 
   app.put('/api/auctions/:id/end', async (req: Request, res: Response) => {
+      const userEm = await getUser(req)
+    
     try {
       const auction = await Auction.findById(req.params.id);
       if (!auction) {
@@ -1215,6 +1256,7 @@ const listedVolume = await NFT.aggregate([
           type: 'auction_win',
           nft: auction.nft,
           from: 'user',
+          owner:userEm,
           to: winningBid.bidder,
           amount: winningBid.amount,
           currency: auction.currency,
@@ -1370,6 +1412,8 @@ const listedVolume = await NFT.aggregate([
 
   // ===== TRANSACTIONS =====
   app.get('/api/transactions', async (req: Request, res: Response) => {
+      const userEm = await getUser(req)
+    
     try {
       const { type, status } = req.query;
       const filter: any = {};
@@ -1384,9 +1428,9 @@ const listedVolume = await NFT.aggregate([
 
       const stats = {
         total: await Transaction.countDocuments(),
-        sales: await Transaction.countDocuments({ type: 'sale' }),
-        purchases: await Transaction.countDocuments({ type: 'purchase' }),
-        mints: await Transaction.countDocuments({ type: 'mint' }),
+        sales: await Transaction.countDocuments({ owner:userEm,type: 'sale' }),
+        purchases: await Transaction.countDocuments({ owner:userEm, type: 'purchase' }),
+        mints: await Transaction.countDocuments({ owner:userEm, type: 'mint' }),
       };
 
       res.json({ transactions, stats });
@@ -1413,11 +1457,17 @@ const listedVolume = await NFT.aggregate([
     }
   };
 
+
+  
+
   app.get('/api/settings', (req: Request, res: Response) => {
+      
+    
     res.json(userSettings);
   });
 
   app.put('/api/settings', (req: Request, res: Response) => {
+    
     userSettings = { ...userSettings, ...req.body };
     res.json(userSettings);
   });

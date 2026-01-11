@@ -3363,7 +3363,12 @@
     
     async function loadTransactions() {
         try {
-            const res = await fetch('/api/transactions');
+            const res = await fetch('/api/transactions', {
+            credentials: 'include', // ✅ REQUIRED
+        });
+
+        if (res.ok) throw new Error('Failed to fetch transactions');
+
             const data = await res.json();
             transactions = data.transactions || [];
             renderTransactions(data.stats);
@@ -4254,6 +4259,7 @@
             const response = await fetch('/api/transactions', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials:"include",
                 body: JSON.stringify({
                     type: 'withdrawal',
                     description: `Withdrawal request to ${wallet.substring(0, 10)}... on ${network}`,
@@ -4681,6 +4687,7 @@
             await fetch('/api/transactions', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials:"include",
                 body: JSON.stringify({
                     type: 'mint',
                     description: `Minted ${mintData.name}`,
