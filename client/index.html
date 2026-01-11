@@ -4745,6 +4745,7 @@
             const response = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                 credentials: 'include', // 🔥 This is required for cookies
                 body: JSON.stringify({ email, password })
             });
             

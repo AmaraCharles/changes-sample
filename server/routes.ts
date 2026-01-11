@@ -3,7 +3,7 @@ import type { Server } from "http";
 import path from "path";
 import fs from "fs";
 import { connectMongoDB } from "./mongodb";
-
+import session from "express-session";
 // ✅ FIX: CommonJS-safe directory resolution
 const __dirname = process.cwd();
 

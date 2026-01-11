@@ -10,6 +10,11 @@ import cors from "cors";
 
 const app = express();
 const httpServer = createServer(app);
+declare module "http" {
+  interface IncomingMessage {
+    rawBody: unknown;
+  }
+}
 
 app.use(cors({
   origin: [
@@ -51,11 +56,6 @@ app.use(
     },
   })
 );
-declare module "http" {
-  interface IncomingMessage {
-    rawBody: unknown;
-  }
-}
 
 app.use(
   express.json({
