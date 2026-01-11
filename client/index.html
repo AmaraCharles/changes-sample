@@ -2954,17 +2954,20 @@
     
     async function loadNfts() {
         try {
-            const res = await fetch('/api/nfts');
+            // const res = await fetch('/api/nfts');
+            // const data = await res.json();
+             const res = await fetch('/api/stats');
             const data = await res.json();
-           
-            listedNfts = data.listed || [];
-            unlistedNfts = allNfts.filter(n => !listedNfts.find(l => l._id === n._id));
-             allNfts = data.owned +listedNfts;
+             
+            // allNfts = data.owned || [];
+            // listedNfts = data.listed || [];
+            // unlistedNfts = allNfts.filter(n => !listedNfts.find(l => l._id === n._id));
+            unlistedNfts=data.unlistedNfts
             // Update stats
-            document.getElementById('nftsPageTotal').innerText = allNfts.length;
-            document.getElementById('nftsPageListed').innerText = listedNfts.length;
-            document.getElementById('nftsPageAuctions').innerText = data.inAuctions || 0;
-            document.getElementById('nftsPageValue').innerText = (data.totalValue || 0) + ' ETH';
+            document.getElementById('nftsPageTotal').innerText =  data.totalNfts || 0;
+            document.getElementById('nftsPageListed').innerText = data.listedNfts || 0;
+            document.getElementById('nftsPageAuctions').innerText = data.activeAuctions || 0;
+            document.getElementById('nftsPageValue').innerText = (data.listedVolume || 0) + ' ETH';
             
             renderNftsPage();
         } catch (err) {

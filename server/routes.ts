@@ -584,6 +584,7 @@ export async function registerRoutes(
       const [
         totalNfts,
         listedNfts,
+        unlistedNfts,
         totalSales,
         activeAuctions,
         totalExhibitions,
@@ -591,6 +592,7 @@ export async function registerRoutes(
       ] = await Promise.all([
         NFT.countDocuments(),
         NFT.countDocuments({ status: 'listed' }),
+        NFT.countDocuments({ status: 'owned' }),
         Sale.countDocuments({ status: 'sold' }),
         Auction.countDocuments({ status: 'active' }),
         Exhibition.countDocuments(),
@@ -601,7 +603,10 @@ export async function registerRoutes(
         { $match: { status: 'sold' } },
         { $group: { _id: null, total: { $sum: '$price' } } }
       ]);
-
+const listedVolume = await NFT.aggregate([
+        { $match: { status: 'listed' } },
+        { $group: { _id: null, total: { $sum: '$price' } } }
+      ]);
       const avgSalePrice = await Sale.aggregate([
         { $match: { status: 'sold' } },
         { $group: { _id: null, avg: { $avg: '$price' } } }
@@ -614,8 +619,10 @@ export async function registerRoutes(
         wethBalance: '0.0000',
         totalNfts,
         listedNfts,
+        unlistedNfts,
         totalSales,
         totalVolume: salesVolume[0]?.total || 0,
+         listedVolume: listedVolume[0]?.total || 0,
         avgSalePrice: avgSalePrice[0]?.avg || 0,
         activeListings: listedNfts,
         activeAuctions,

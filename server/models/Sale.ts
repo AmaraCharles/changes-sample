@@ -11,6 +11,7 @@ export interface ISale extends Document {
   soldDate?: Date;
   createdAt: Date;
   updatedAt: Date;
+  
 }
 
 const SaleSchema = new Schema<ISale>({
