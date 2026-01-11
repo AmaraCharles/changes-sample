@@ -352,47 +352,58 @@ export async function registerRoutes(
 
   // Login
   app.post('/api/auth/login', async (req: Request, res: Response) => {
-    try {
-      const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-      const user = await User.findOne({ email: email.toLowerCase() });
-      if (!user) {
-        return res.status(401).json({ message: 'Invalid email or password' });
-      }
-
-      const validPassword = await bcrypt.compare(password, user.password);
-      if (!validPassword) {
-        return res.status(401).json({ message: 'Invalid email or password' });
-      }
-
-      if (!user.verified) {
-        // Generate new code if not verified
-        const verificationCode = generateVerificationCode();
-        user.verificationCode = verificationCode;
-        user.verificationExpiry = new Date(Date.now() + 10 * 60 * 1000);
-        await user.save();
-        
-        return res.status(403).json({ 
-          message: 'Please verify your email first',
-          needsVerification: true,
-          email: user.email,
-          verificationCode // Remove in production
-        });
-      }
-
-      req.session.userId = user._id.toString();
-      req.session.email = user.email;
-
-      res.json({ 
-        message: 'Login successful',
-        email: user.email,
-        username: user.username
-      });
-    } catch (error) {
-      console.error('Login error:', error);
-      res.status(500).json({ message: 'Failed to login' });
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid email or password' });
     }
-  });
+
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    if (!user.verified) {
+      const verificationCode = generateVerificationCode();
+      user.verificationCode = verificationCode;
+      user.verificationExpiry = new Date(Date.now() + 10 * 60 * 1000);
+      await user.save();
+      return res.status(403).json({
+        message: 'Please verify your email first',
+        needsVerification: true,
+        email: user.email,
+      });
+    }
+
+    // ✅ Set session
+    req.session.userId = user._id.toString();
+    req.session.email = user.email;
+
+    // ✅ Save session and confirm
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.status(500).json({ message: 'Login succeeded but session failed' });
+      }
+
+      // Session successfully saved
+      res.json({
+        message: 'Login successful, session stored!',
+        email: user.email,
+        username: user.username,
+        sessionStored: true // frontend can use this
+      });
+    });
+
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ message: 'Failed to login' });
+  }
+});
+
+
 
   // Logout
   app.post('/api/auth/logout', (req: Request, res: Response) => {

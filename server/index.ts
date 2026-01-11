@@ -1,5 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
+import MongoStore from 'connect-mongo';
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
@@ -8,16 +9,35 @@ const app = express();
 const httpServer = createServer(app);
 
 // Session middleware
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'vaultorx-dev-secret-key-2024',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-  }
-}));
+// app.use(session({
+//   secret: process.env.SESSION_SECRET || 'vaultorx-dev-secret-key-2024',
+//   resave: false,
+//   saveUninitialized: false,
+//   cookie: {
+//     secure: process.env.NODE_ENV === 'production',
+//     httpOnly: true,
+//     maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+//   }
+// }));
+app.use(
+  session({
+    name:"setson",
+    secret: process.env.SESSION_SECRET || "devSecret123",
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGODB_URI, // ✅ must be valid
+    }),
+   cookie: {
+  path: "/",
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 1 day
+  httpOnly: true,
+  secure:process.env.NODE_ENV === 'production',
+  sameSite:'none',
+}
+
+  })
+);
 
 declare module "http" {
   interface IncomingMessage {
