@@ -615,7 +615,7 @@ export async function registerRoutes(
       ]);
 
       const salesVolume = await Sale.aggregate([
-        { $match: { owner: user.email,status: 'sold' } },
+        { $match: { seller: user.email,status: 'sold' } },
         { $group: { _id: null, total: { $sum: '$price' } } }
       ]);
 const listedVolume = await NFT.aggregate([
@@ -623,7 +623,7 @@ const listedVolume = await NFT.aggregate([
         { $group: { _id: null, total: { $sum: '$price' } } }
       ]);
       const avgSalePrice = await Sale.aggregate([
-        { $match: { owner: user.email,status: 'sold' } },
+        { $match: { seller: user.email,status: 'sold' } },
         { $group: { _id: null, avg: { $avg: '$price' } } }
       ]);
 
