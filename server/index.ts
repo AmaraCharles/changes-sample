@@ -4,9 +4,20 @@ import MongoStore from 'connect-mongo';
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
+import cors from "cors";
+// or: const cors = require("cors");
+
 
 const app = express();
 const httpServer = createServer(app);
+
+app.use(cors({
+  origin: [
+   
+    "http://localhost:5000"
+  ],
+  credentials: true,
+}));
 
 // Session middleware
 // app.use(session({
