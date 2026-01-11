@@ -583,7 +583,7 @@ export async function registerRoutes(
   app.get('/api/stats', async (req: Request, res: Response) => {
     const userId = req.session.userId;
 
-    const user = await UsersDatabase.findOne({ userId });
+    const user = await UsersDatabase.findOne({ _id:userId });
 
   if (!user) {
     res.status(404).json({
