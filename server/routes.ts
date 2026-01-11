@@ -608,10 +608,10 @@ export async function registerRoutes(
         NFT.countDocuments({owner: user.email}),
         NFT.countDocuments({owner: user.email, status: 'listed' }),
         NFT.countDocuments({owner: user.email, status: 'owned' }),
-        Sale.countDocuments({ owner: user.email,status: 'sold' }),
-        Auction.countDocuments({ owner: user.email,status: 'active' }),
-        Exhibition.countDocuments(),
-        Exhibition.countDocuments({ owner: userId,status: 'active' }),
+        Sale.countDocuments({ seller: user.email,status: 'sold' }),
+        Auction.countDocuments({ seller: user.email,status: 'active' }),
+        Exhibition.countDocuments({owner: user.email}),
+        Exhibition.countDocuments({status: 'active' }),
       ]);
 
       const salesVolume = await Sale.aggregate([
@@ -972,6 +972,7 @@ const listedVolume = await NFT.aggregate([
         price: Number(price),
         currency: currency || 'ETH',
         status: 'active',
+        seller:dbUser.email
       });
 
       await sale.save();
@@ -1250,6 +1251,26 @@ const listedVolume = await NFT.aggregate([
     }
   });
 
+  app.get('/api/exhibitions/user', async (req: Request, res: Response) => {
+    try {
+      const { status } = req.query;
+      const filter: any = {};
+      if (status) filter.status = status;
+
+      const exhibitions = await Exhibition.find(filter).populate('nfts').sort({ createdAt: -1 });
+
+      const stats = {
+        total: exhibitions.length,
+        active: exhibitions.filter(e => e.status === 'active').length,
+        totalViews: exhibitions.reduce((acc, e) => acc + e.views, 0),
+        totalLikes: exhibitions.reduce((acc, e) => acc + e.likes, 0),
+      };
+
+      res.json({ exhibitions, stats });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to get exhibitions' });
+    }
+  });
   app.post('/api/exhibitions', upload.fields([
     { name: 'thumbnail', maxCount: 1 },
     { name: 'banner', maxCount: 1 }

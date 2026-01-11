@@ -19,6 +19,7 @@ export interface IExhibition extends Document {
   likes: number;
   createdAt: Date;
   updatedAt: Date;
+  owner:string;
 }
 
 const ExhibitionSchema = new Schema<IExhibition>({
@@ -38,6 +39,7 @@ const ExhibitionSchema = new Schema<IExhibition>({
   nfts: [{ type: Schema.Types.ObjectId, ref: 'NFT' }],
   views: { type: Number, default: 0 },
   likes: { type: Number, default: 0 },
+  owner: { type: String },
 }, { timestamps: true });
 
 export const Exhibition = mongoose.model<IExhibition>('Exhibition', ExhibitionSchema);

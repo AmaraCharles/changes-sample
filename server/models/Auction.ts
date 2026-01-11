@@ -23,6 +23,7 @@ export interface IAuction extends Document {
   winner?: string;
   createdAt: Date;
   updatedAt: Date;
+  owner:string;
 }
 
 const BidSchema = new Schema({
@@ -46,6 +47,7 @@ const AuctionSchema = new Schema<IAuction>({
   status: { type: String, enum: ['pending', 'active', 'ended', 'cancelled'], default: 'pending' },
   seller: { type: String, default: 'user' },
   winner: { type: String },
+  
 }, { timestamps: true });
 
 export const Auction = mongoose.model<IAuction>('Auction', AuctionSchema);
