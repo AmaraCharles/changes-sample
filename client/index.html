@@ -2909,7 +2909,7 @@
     
     async function loadDashboardNfts() {
         try {
-            const res = await fetch('/api/nfts');
+            const res = await fetch('/api/nfts/user');
             const data = await res.json();
             allNfts = data.owned || [];
             listedNfts = data.listed || [];

@@ -771,10 +771,44 @@ const listedVolume = await NFT.aggregate([
 
   // ===== NFTs =====
   app.get('/api/nfts', async (req: Request, res: Response) => {
+    
     try {
       const { status, collection: collectionId } = req.query;
       const filter: any = {};
       
+      if (status) filter.status = status;
+      if (collectionId) filter.collectionId = collectionId;
+
+      const nfts = await NFT.find(filter).populate('collectionId').sort({ createdAt: -1 });
+      
+      const owned = nfts.filter(n => n.status === 'owned');
+      const listed = nfts.filter(n => n.status === 'listed');
+      const sold = nfts.filter(n => n.status === 'sold');
+
+      res.json({
+        all: nfts,
+        owned,
+        listed,
+        sold,
+        counts: {
+          total: nfts.length,
+          owned: owned.length,
+          listed: listed.length,
+          sold: sold.length,
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to get NFTs' });
+    }
+  });
+
+  app.get('/api/nfts/user', async (req: Request, res: Response) => {
+      const userEm = await getUser(req)
+    
+    try {
+      const { status, collection: collectionId } = req.query;
+      const filter: any = {};
+      filter.owner=userEm
       if (status) filter.status = status;
       if (collectionId) filter.collectionId = collectionId;
 
