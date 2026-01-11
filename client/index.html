@@ -2956,10 +2956,10 @@
         try {
             const res = await fetch('/api/nfts');
             const data = await res.json();
-            allNfts = data.owned || [];
+           
             listedNfts = data.listed || [];
             unlistedNfts = allNfts.filter(n => !listedNfts.find(l => l._id === n._id));
-            
+             allNfts = data.owned +listedNfts;
             // Update stats
             document.getElementById('nftsPageTotal').innerText = allNfts.length;
             document.getElementById('nftsPageListed').innerText = listedNfts.length;
