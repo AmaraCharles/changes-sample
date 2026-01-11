@@ -611,7 +611,7 @@ export async function registerRoutes(
         Sale.countDocuments({ seller: user.email,status: 'sold' }),
         Auction.countDocuments({ seller: user.email,status: 'active' }),
         Exhibition.countDocuments({owner: user.email}),
-        Exhibition.countDocuments({status: 'active' }),
+        Exhibition.countDocuments({owner: user.email,status: 'active' }),
       ]);
 
       const salesVolume = await Sale.aggregate([
