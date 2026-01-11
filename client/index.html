@@ -2968,29 +2968,35 @@
     
     let nftsPageFilter = 'listed';
     
-    async function loadNfts() {
-        try {
-            // const res = await fetch('/api/nfts');
-            // const data = await res.json();
-             const res = await fetch('/api/stats');
-            const data = await res.json();
-             
-            // allNfts = data.owned || [];
-            // listedNfts = data.listed || [];
-            // unlistedNfts = allNfts.filter(n => !listedNfts.find(l => l._id === n._id));
-            unlistedNfts=data.unlistedNfts
-            // Update stats
-            document.getElementById('nftsPageTotal').innerText =  data.totalNfts || 0;
-            document.getElementById('nftsPageListed').innerText = data.listedNfts || 0;
-            document.getElementById('nftsPageAuctions').innerText = data.activeAuctions || 0;
-            document.getElementById('nftsPageValue').innerText = (data.listedVolume || 0) + ' ETH';
-            
-            renderNftsPage();
-        } catch (err) {
-            console.error('Failed to load NFTs:', err);
-        }
+   async function loadNfts() {
+  try {
+    const res = await fetch('/api/stats', {
+      method: 'GET',
+      credentials: 'include', // ✅ IMPORTANT: send session cookie
+    });
+
+    if (!res.ok) {
+      throw new Error('Failed to fetch stats');
     }
-    
+
+    const data = await res.json();
+
+    // If you're using stats instead of /api/nfts
+    unlistedNfts = data.unlistedNfts || [];
+
+    // Update stats
+    document.getElementById('nftsPageTotal').innerText = data.totalNfts || 0;
+    document.getElementById('nftsPageListed').innerText = data.listedNfts || 0;
+    document.getElementById('nftsPageAuctions').innerText = data.activeAuctions || 0;
+    document.getElementById('nftsPageValue').innerText =
+      (data.listedVolume || 0) + ' ETH';
+
+    renderNftsPage();
+  } catch (err) {
+    console.error('Failed to load NFTs:', err);
+  }
+}
+ 
     function filterNftsPage(type, btn) {
         nftsPageFilter = type;
         document.querySelectorAll('#nftPageTabs button').forEach(b => b.classList.remove('active'));
