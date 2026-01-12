@@ -766,6 +766,7 @@ const listedVolume = await NFT.aggregate([
         imageUrl,
         imagePublicId,
         bannerUrl,
+        owner:userEm,
         bannerPublicId,
       });
 
