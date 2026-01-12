@@ -23,39 +23,39 @@ app.use(cors({
   ],
   credentials: true,
 }));
-
-// Session middleware
-// app.use(session({
-//   secret: process.env.SESSION_SECRET || 'vaultorx-dev-secret-key-2024',
-//   resave: false,
-//   saveUninitialized: false,
-//   cookie: {
-//     secure: process.env.NODE_ENV === 'production',
-//     httpOnly: true,
-//     maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-//   }
-// }));
 app.set("trust proxy", 1); // REQUIRED in prod
 
-app.use(
-  session({
-    name: "setson",
-    secret: process.env.SESSION_SECRET!,
-    resave: false,
-    saveUninitialized: false,
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'vaultorx-dev-secret-key-2024',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+  }
+}));
 
-    store: MongoStore.create({
-      mongoUrl: process.env.MONGODB_URI!,
-    }),
 
-    cookie: {
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    },
-  })
-);
+// app.use(
+//   session({
+//     name: "setson",
+//     secret: process.env.SESSION_SECRET!,
+//     resave: false,
+//     saveUninitialized: false,
+
+//     store: MongoStore.create({
+//       mongoUrl: process.env.MONGODB_URI!,
+//     }),
+
+//     cookie: {
+//       httpOnly: true,
+//       secure: false,
+//       sameSite: "lax",
+//       maxAge: 7 * 24 * 60 * 60 * 1000,
+//     },
+//   })
+// );
 
 app.use(
   express.json({
