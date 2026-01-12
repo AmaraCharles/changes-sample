@@ -2230,7 +2230,14 @@
                             <option value="Gaming">Gaming</option>
                         </select>
                     </div>
-                    
+                    <div class="mb-4">
+  <label class="form-label-custom">
+    Tags <span class="text-muted">(select applicable tags)</span>
+  </label>
+
+  <div id="mintTagContainer" class="tag-container"></div>
+</div>
+
                     <div class="mb-4">
                         <label class="form-label-custom">Rarity <span class="text-danger">*</span></label>
                         <div class="rarity-options">
@@ -2268,7 +2275,122 @@
                     </div>
                 </div>
             </div>
-            
+            <style>
+.tag-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.mint-tag {
+  padding: 8px 14px;
+  border-radius: 20px;
+  background: #1c1c24;
+  color: #b5b5b5;
+  font-size: 13px;
+  cursor: pointer;
+  border: 1px solid #2a2a35;
+  transition: all 0.2s ease;
+}
+
+.mint-tag:hover {
+  border-color: #6f5eff;
+  color: #ffffff;
+}
+
+.mint-tag.active {
+  background: #6f5eff;
+  color: #ffffff;
+  border-color: #6f5eff;
+}
+</style>
+
+            <script>
+const CATEGORY_TAGS = {
+  Art: [
+    'Digital Art',
+    'Abstract',
+    'Illustration',
+    '3D Art',
+    'Pixel Art',
+    'AI Art',
+    'Concept Art'
+  ],
+  Photography: [
+    'Portrait',
+    'Landscape',
+    'Street',
+    'Nature',
+    'Black & White',
+    'Macro',
+    'Urban'
+  ],
+  Music: [
+    'Hip Hop',
+    'Afrobeats',
+    'Electronic',
+    'Instrumental',
+    'Soundtrack',
+    'Vocal',
+    'Experimental'
+  ],
+  Video: [
+    'Animation',
+    'Short Film',
+    'Motion Graphics',
+    'Cinematic',
+    'Loop',
+    'Visual FX',
+    'Storytelling'
+  ],
+  Collectibles: [
+    'PFP',
+    'Limited Edition',
+    'Series',
+    'Avatar',
+    'Handcrafted',
+    'Signed',
+    'Exclusive'
+  ],
+  Gaming: [
+    'Weapon',
+    'Character',
+    'Skin',
+    'Metaverse',
+    'Power-Up',
+    'Land',
+    'Item'
+  ]
+};
+
+const tagContainer = document.getElementById('mintTagContainer');
+const categorySelect = document.getElementById('mintNftCategory');
+
+function renderTags(category) {
+  tagContainer.innerHTML = '';
+
+  CATEGORY_TAGS[category].forEach(tag => {
+    const tagEl = document.createElement('span');
+    tagEl.className = 'mint-tag';
+    tagEl.textContent = tag;
+
+    tagEl.onclick = () => {
+      tagEl.classList.toggle('active');
+    };
+
+    tagContainer.appendChild(tagEl);
+  });
+}
+
+// Initial load
+renderTags(categorySelect.value);
+
+// On category change
+categorySelect.addEventListener('change', (e) => {
+  renderTags(e.target.value);
+});
+</script>
+
             <!-- Step 3: Pricing -->
             <div class="mint-step-content" id="mintStep3">
                 <div class="vx-card">
@@ -4716,6 +4838,96 @@ credentials:"include"
 
 
     async function submitMint() {
+
+        const CATEGORY_TAGS = {
+  Art: [
+    'Digital Art',
+    'Abstract',
+    'Illustration',
+    '3D Art',
+    'Pixel Art',
+    'AI Art',
+    'Concept Art'
+  ],
+  Photography: [
+    'Portrait',
+    'Landscape',
+    'Street',
+    'Nature',
+    'Black & White',
+    'Macro',
+    'Urban'
+  ],
+  Music: [
+    'Hip Hop',
+    'Afrobeats',
+    'Electronic',
+    'Instrumental',
+    'Soundtrack',
+    'Vocal',
+    'Experimental'
+  ],
+  Video: [
+    'Animation',
+    'Short Film',
+    'Motion Graphics',
+    'Cinematic',
+    'Loop',
+    'Visual FX',
+    'Storytelling'
+  ],
+  Collectibles: [
+    'PFP',
+    'Limited Edition',
+    'Series',
+    'Avatar',
+    'Handcrafted',
+    'Signed',
+    'Exclusive'
+  ],
+  Gaming: [
+    'Weapon',
+    'Character',
+    'Skin',
+    'Metaverse',
+    'Power-Up',
+    'Land',
+    'Item'
+  ]
+};
+
+const tagContainer = document.getElementById('mintTagContainer');
+const categorySelect = document.getElementById('mintNftCategory');
+
+function renderTags(category) {
+  tagContainer.innerHTML = '';
+
+  CATEGORY_TAGS[category].forEach(tag => {
+    const tagEl = document.createElement('span');
+    tagEl.className = 'mint-tag';
+    tagEl.textContent = tag;
+
+    tagEl.onclick = () => {
+      tagEl.classList.toggle('active');
+    };
+
+    tagContainer.appendChild(tagEl);
+  });
+}
+
+// Initial load
+renderTags(categorySelect.value);
+
+// On category change
+categorySelect.addEventListener('change', (e) => {
+  renderTags(e.target.value);
+});
+
+function getSelectedTags() {
+  return [...document.querySelectorAll('.mint-tag.active')]
+    .map(tag => tag.textContent);
+}
+
         if (!document.getElementById('agreeTerms').checked) {
             document.getElementById('termsError').style.display = 'block';
             return;
@@ -4749,6 +4961,7 @@ credentials:"include"
                 category: mintData.category,
                 rarity: mintData.rarity,
                 attributes: mintData.attributes,
+                tags: getSelectedTags(),
                 royalty: mintData.royalty
             };
             

@@ -15,6 +15,7 @@ export interface INFT extends Document {
   creator: string;
   royalty: number;
   attributes?: Array<{ trait_type: string; value: string }>;
+  tags?:string[];
   views: number;
   likes: number;
   mediaType: 'image' | 'gif' | 'video' | 'audio';
@@ -40,6 +41,12 @@ const NFTSchema = new Schema<INFT>({
   creator: { type: String, default: 'user' },
   royalty: { type: Number, default: 0 },
   attributes: [{ trait_type: String, value: String }],
+   tags: {
+      type: [String],
+      default: [],
+      index: true,
+    },
+
   views: { type: Number, default: 0 },
   likes: { type: Number, default: 0 },
   mediaType: { type: String, enum: ['image', 'gif', 'video', 'audio'], default: 'image' },

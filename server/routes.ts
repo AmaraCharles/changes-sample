@@ -903,7 +903,7 @@ app.get('/api/nfts/user', async (req: Request, res: Response) => {
       const userEm = await getUser(req)
     
     try {
-      const { name, description, collectionId, collection, price, currency, royalty, attributes, imageUrl: providedImageUrl, mediaType, category, rarity } = req.body;
+      const { name, description, collectionId, collection, price, currency, royalty, attributes, imageUrl: providedImageUrl, mediaType, category, rarity,tags } = req.body;
       const MINTING_FEE = 0.2; // Hard-coded minting fee - never trust client input
       
       // Get authenticated user from session
@@ -967,6 +967,7 @@ app.get('/api/nfts/user', async (req: Request, res: Response) => {
         rarity: rarity || 'Common',
         owner: dbUser.email,
         creator: dbUser.username,
+        tags
       });
 
       await nft.save();
