@@ -6,6 +6,11 @@ cloudinary.config({
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
+// cloudinary.config({
+//   cloud_name:"dbzjwzm9r",
+//   api_key: "645475994863459",
+//   api_secret: "nHsgmwyRjvd_yjbA2jk8ltIUG4Q",
+// });
 
 export const upload = multer({
   storage: multer.memoryStorage(),

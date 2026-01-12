@@ -21,6 +21,7 @@ export interface INFT extends Document {
   category: string;
   rarity: string;
   createdAt: Date;
+  soldDate?: Date;
   updatedAt: Date;
 }
 
@@ -44,6 +45,7 @@ const NFTSchema = new Schema<INFT>({
   mediaType: { type: String, enum: ['image', 'gif', 'video', 'audio'], default: 'image' },
   category: { type: String, default: 'Art' },
   rarity: { type: String, default: 'Common' },
+  soldDate: { type: Date, default: undefined },
 }, { timestamps: true });
 
 export const NFT = mongoose.model<INFT>('NFT', NFTSchema);

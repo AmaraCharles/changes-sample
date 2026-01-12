@@ -948,14 +948,14 @@
             <i class="bi bi-gear"></i>
             <span>Settings</span>
         </a>
-        <a href="#" class="sidebar-link">
+        <!-- <a href="#" class="sidebar-link">
             <i class="bi bi-shield-check"></i>
             <span>Privacy Policy</span>
         </a>
         <a href="#" class="sidebar-link">
             <i class="bi bi-file-text"></i>
             <span>Terms Of Service</span>
-        </a>
+        </a> -->
     </div>
     <div class="sidebar-footer">
         <a href="#" class="sidebar-link text-danger" onclick="logout()">
@@ -1290,7 +1290,7 @@
                                 <i class="bi bi-grid-3x3-gap"></i>
                             </div>
                         </div>
-                        <h4 class="fw-bold mb-0">0</h4>
+                        <h4 class="fw-bold mb-0" id="totalCollections" >0</h4>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
@@ -1301,10 +1301,10 @@
                                 <i class="bi bi-list-ul"></i>
                             </div>
                         </div>
-                        <h4 class="fw-bold mb-0">0</h4>
+                        <h4 class="fw-bold mb-0" id="totalNftsInside">0</h4>
                     </div>
                 </div>
-                <div class="col-6 col-md-3">
+                <!-- <div class="col-6 col-md-3">
                     <div class="vx-card d-flex flex-column gap-2">
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="text-muted small">Floor Value</span>
@@ -1312,9 +1312,9 @@
                                 <i class="bi bi-eye"></i>
                             </div>
                         </div>
-                        <h4 class="fw-bold mb-0">0.00 WETH</h4>
+                        <h4 class="fw-bold mb-0" id="floorValue">0.00 WETH</h4>
                     </div>
-                </div>
+                </div> -->
                 <div class="col-6 col-md-3">
                     <div class="vx-card d-flex flex-column gap-2">
                         <div class="d-flex justify-content-between align-items-center">
@@ -1323,7 +1323,7 @@
                                 <i class="bi bi-share"></i>
                             </div>
                         </div>
-                        <h4 class="fw-bold mb-0">0.0 WETH</h4>
+                        <h4 class="fw-bold mb-0" id="totalCollectionVolume">0.0 WETH</h4>
                     </div>
                 </div>
             </div>
@@ -1381,7 +1381,7 @@
                         <i class="bi bi-wallet2"></i>
                     </div>
                 </div>
-                <h3 class="fw-bold mb-0">...</h3>
+                <h3 class="fw-bold mb-0" id="totalTransacVolume">...</h3>
             </div>
 
             <div class="vx-card">
@@ -1674,7 +1674,7 @@
                     <button class="nav-link active rounded-pill" onclick="filterNftsPage('listed', this)" type="button">Listed</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link rounded-pill" onclick="filterNftsPage('unlisted', this)" type="button">Unlisted</button>
+                    <button class="nav-link rounded-pill" onclick="filterNftsPage('owned', this)" type="button">Unlisted</button>
                 </li>
             </ul>
 
@@ -2570,7 +2570,7 @@
                         <input type="number" class="form-control flex-grow-1" id="withdrawAmount" placeholder="0.00" step="0.0001" required>
                         <select class="form-select" id="withdrawCurrency" style="max-width: 100px;">
                             <option value="ETH">ETH</option>
-                            <option value="WETH">WETH</option>
+                            <!-- <option value="WETH">WETH</option> -->
                         </select>
                     </div>
                     <div class="d-flex justify-content-end mt-1">
@@ -2583,11 +2583,11 @@
                     <select class="form-select" id="withdrawNetwork" required>
                         <option value="">Select Network</option>
                         <option value="ethereum">Ethereum Mainnet</option>
-                        <option value="polygon">Polygon</option>
+                        <!-- <option value="polygon">Polygon</option>
                         <option value="arbitrum">Arbitrum</option>
                         <option value="optimism">Optimism</option>
                         <option value="base">Base</option>
-                        <option value="bsc">BNB Smart Chain</option>
+                        <option value="bsc">BNB Smart Chain</option> -->
                     </select>
                 </div>
                 
@@ -2907,23 +2907,56 @@
     let listedNfts = [];
     let unlistedNfts = [];
     
-    async function loadDashboardNfts() {
-        try {
-            const res = await fetch('/api/nfts/user');
-            const data = await res.json();
-            allNfts = data.owned || [];
-            listedNfts = data.listed || [];
-            unlistedNfts = allNfts.filter(n => !listedNfts.find(l => l._id === n._id));
-            
-            // Update counts
-            document.getElementById('listedCount').innerText = listedNfts.length;
-            document.getElementById('unlistedCount').innerText = unlistedNfts.length;
-            
-            renderDashboardNfts();
-        } catch (err) {
-            console.error('Failed to load dashboard NFTs:', err);
-        }
-    }
+//    async function loadDashboardNfts() {
+//     try {
+//         const res = await fetch('/api/nfts/user', {
+//             credentials: 'include', // ✅ REQUIRED
+//         });
+
+//         const data = await res.json();
+
+//         // All NFTs belonging to this user
+//         const allNfts = data.all || [];
+
+//         // NFTs grouped by status
+//         const ownedNfts = data.owned || [];
+//         const listedNfts = data.listed || [];
+//         const soldNfts = data.sold || [];
+
+//         // Unlisted NFTs = owned NFTs that are not listed
+//         const unlistedNfts = ownedNfts.filter(
+//             n => !listedNfts.find(l => l._id === n._id)
+//         );
+
+//         // Update global or component state
+//         window.allNfts = allNfts;
+//         window.ownedNfts = ownedNfts;
+//         window.listedNfts = listedNfts;
+//         window.soldNfts = soldNfts;
+//         window.unlistedNfts = unlistedNfts;
+
+//         // Update counts in the DOM
+//         document.getElementById('listedCount').innerText = listedNfts.length;
+//         document.getElementById('unlistedCount').innerText = unlistedNfts.length;
+//         document.getElementById('soldCount').innerText = soldNfts.length;
+//         document.getElementById('totalCount').innerText = allNfts.length;
+
+//         // Render NFTs to the dashboard
+//         renderDashboardNfts();
+//     } catch (err) {
+//         console.error('Failed to load dashboard NFTs:', err);
+//     }
+// }
+
+
+async function loadDashboardNfts() { 
+    try { const res = await fetch('/api/nfts/user',
+     { credentials: 'include', });
+      const data = await res.json();
+       allNfts = data.owned || []; 
+       listedNfts = data.listed || [];
+        unlistedNfts = allNfts.filter(n => !listedNfts.find(l => l._id === n._id)); 
+ document.getElementById('listedCount').innerText = listedNfts.length; document.getElementById('unlistedCount').innerText = unlistedNfts.length; renderDashboardNfts(); } catch (err) { console.error('Failed to load dashboard NFTs:', err); } }
     
     function filterDashboardNfts(type, btn) {
         dashboardNftFilter = type;
@@ -2970,7 +3003,7 @@
     
    async function loadNfts() {
   try {
-    const res = await fetch('/api/stats', {
+    const res = await fetch('/api/nfts/user', {
       method: 'GET',
       credentials: 'include', // ✅ IMPORTANT: send session cookie
     });
@@ -2980,16 +3013,18 @@
     }
 
     const data = await res.json();
+console.log(data);
 
     // If you're using stats instead of /api/nfts
-    unlistedNfts = data.unlistedNfts || [];
+    unlistedNfts = data.owned || [];
+console.log(unlistedNfts);
 
     // Update stats
-    document.getElementById('nftsPageTotal').innerText = data.totalNfts || 0;
-    document.getElementById('nftsPageListed').innerText = data.listedNfts || 0;
-    document.getElementById('nftsPageAuctions').innerText = data.activeAuctions || 0;
-    document.getElementById('nftsPageValue').innerText =
-      (data.listedVolume || 0) + ' ETH';
+    document.getElementById('nftsPageTotal').innerText = data.counts.owned+data.counts.listed || 0;
+    document.getElementById('nftsPageListed').innerText = data.counts.listed || 0;
+    document.getElementById('nftsPageAuctions').innerText = data.counts.auction || 0;
+    // document.getElementById('nftsPageValue').innerText =
+    //   (data.listedVolume || 0) + ' ETH';
 
     renderNftsPage();
   } catch (err) {
@@ -3009,8 +3044,10 @@
         if (!container) return;
         
         let nftsToShow = listedNfts;
-        if (nftsPageFilter === 'unlisted') {
+        if (nftsPageFilter === 'owned') {
             nftsToShow = unlistedNfts;
+            console.log(nftsToShow);
+            
         }
         
         if (nftsToShow.length === 0) {
@@ -3051,7 +3088,9 @@
 
     async function loadCollections() {
         try {
-            const res = await fetch('/api/collections');
+            const res = await fetch('/api/collections',{
+credentials:"include",
+            });
             collections = await res.json();
             renderCollections();
         } catch (err) {
@@ -3061,9 +3100,30 @@
 
     function renderCollections() {
         const container = document.getElementById('collectionsGrid');
-        const countEl = document.getElementById('collectionCount');
+        const countEl = document.getElementById('totalCollections');
         if (countEl) countEl.innerText = collections.length;
-        
+       const nftcount = document.getElementById('totalNftsInside');
+const totalCollectionVolume = document.getElementById('totalCollectionVolume');
+let nftcounter = 0;
+let volumecounter=0
+
+collections.forEach(collection => {
+  nftcounter += collection.nftCount || 0;
+});
+
+if (nftcount) {
+  nftcount.innerText = nftcounter;
+}
+
+collections.forEach(collection => {
+  volumecounter += collection.totalVolume || 0;
+});
+
+if (totalCollectionVolume) {
+  totalCollectionVolume.innerText = volumecounter +" "+"WETH";
+}
+
+
         if (!container) return;
         
         if (collections.length === 0) {
@@ -3149,23 +3209,29 @@
 
     async function loadSales() {
         try {
-            const res = await fetch('/api/sales');
-            const data = await res.json();
-            sales = data.sales || [];
-            renderSales(data.stats);
+            const res = await fetch('/api/nfts/user',{
+credentials:"include",
+            });
+           
+           const data = await res.json();
+       allNfts = data.owned || []; 
+       listedNfts = data.listed || [];
+        unlistedNfts = allNfts.filter(n => !listedNfts.find(l => l._id === n._id)); 
+            renderSales(data);
         } catch (err) {
             console.error('Failed to load sales:', err);
         }
     }
 
-    function renderSales(stats) {
+    function renderSales(data) {
         const container = document.getElementById('salesList');
         const countEl = document.getElementById('salesCount');
-        if (countEl) countEl.innerText = sales.length + ' listings found';
+        if (countEl) countEl.innerText = data.listed.length + ' listings found';
         
         if (!container) return;
+        console.log(data);
         
-        if (sales.length === 0) {
+        if (data.length === 0) {
             container.innerHTML = `
                 <div class="text-center py-5">
                     <i class="bi bi-image text-muted display-4 mb-3 d-block"></i>
@@ -3176,35 +3242,56 @@
         }
         
         container.innerHTML = `
-            <table class="table table-borderless align-middle mb-0">
-                <thead class="text-muted small border-bottom">
-                    <tr>
-                        <th class="pb-3 fw-medium">NFT</th>
-                        <th class="pb-3 fw-medium">Price</th>
-                        <th class="pb-3 fw-medium">Status</th>
-                        <th class="pb-3 fw-medium">Listed Date</th>
-                        <th class="pb-3 fw-medium">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${sales.map(s => `
-                        <tr>
-                            <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    ${s.nft?.imageUrl ? `<img src="${s.nft.imageUrl}" class="rounded" style="width: 40px; height: 40px; object-fit: cover;">` : '<div class="rounded bg-light" style="width: 40px; height: 40px;"></div>'}
-                                    <span>${s.nft?.name || 'Unknown'}</span>
-                                </div>
-                            </td>
-                            <td>${s.price} ${s.currency}</td>
-                            <td><span class="badge ${s.status === 'active' ? 'bg-success' : s.status === 'sold' ? 'bg-primary' : 'bg-secondary'}">${s.status}</span></td>
-                            <td>${new Date(s.listedDate).toLocaleDateString()}</td>
-                            <td>
-                                ${s.status === 'active' ? `<button class="btn btn-sm btn-outline-danger" onclick="cancelSale('${s._id}')">Cancel</button>` : '-'}
-                            </td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>`;
+           <div class="table-responsive">
+  <table class="table table-borderless align-middle mb-0">
+    <thead class="text-muted small border-bottom">
+      <tr>
+        <th class="pb-3 fw-medium">NFT</th>
+        <th class="pb-3 fw-medium">Price</th>
+        <th class="pb-3 fw-medium">Status</th>
+        <th class="pb-3 fw-medium">Listed Date</th>
+        <th class="pb-3 fw-medium">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${data.listed.map(s => `
+        <tr>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              ${
+                s.imageUrl
+                  ? `<img src="${s.imageUrl}" class="rounded" style="width:40px;height:40px;object-fit:cover;">`
+                  : `<div class="rounded bg-light" style="width:40px;height:40px;"></div>`
+              }
+              <span class="text-nowrap">${s.name || 'Unknown'}</span>
+            </div>
+          </td>
+          <td class="text-nowrap">${s.price} ${s.currency}</td>
+          <td class="text-nowrap">
+            <span class="badge ${
+              s.status === 'active'
+                ? 'bg-success'
+                : s.status === 'sold'
+                ? 'bg-primary'
+                : 'bg-secondary'
+            }">${s.status}</span>
+          </td>
+          <td class="text-nowrap">
+            ${new Date(s.createdAt).toLocaleDateString()}
+          </td>
+          <td class="text-nowrap">
+            ${
+              s.status === 'listed'
+                ? `<button class="btn btn-sm btn-outline-danger" onclick="cancelSale('${s._id}')">Cancel</button>`
+                : '-'
+            }
+          </td>
+        </tr>
+      `).join('')}
+    </tbody>
+  </table>
+</div>
+`;
     }
 
     async function cancelSale(id) {
@@ -3218,7 +3305,9 @@
 
     async function loadAuctions() {
         try {
-            const res = await fetch('/api/auctions');
+            const res = await fetch('/api/auctions/user',{
+                credentials:"include"
+            });
             const data = await res.json();
             auctions = data.auctions || [];
             renderAuctions(data.stats);
@@ -3308,7 +3397,9 @@
 
     async function loadExhibitions() {
         try {
-            const res = await fetch('/api/exhibitions');
+            const res = await fetch('/api/exhibitions/user',{
+credentials:"include"
+            });
             const data = await res.json();
             exhibitions = data.exhibitions || [];
             renderExhibitions(data.stats);
@@ -3463,6 +3554,17 @@
 
     function renderDashboardTransactions() {
         const container = document.getElementById('dashboardTransactions');
+        const totalTransacVolume = document.getElementById('totalTransacVolume');
+        let transaccounter=0;
+     transactions.forEach(transaction => {
+  transaccounter += transaction.total || 0;
+});
+
+
+  totalTransacVolume.innerText = transactions.length;
+
+   
+       
         if (!container) return;
         
         const recent = transactions.slice(0, 5);
@@ -3589,7 +3691,8 @@
         try {
             const res = await fetch('/api/exhibitions', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials:"include"
             });
             if (res.ok) {
                 closeCreateExhibitionModal();
@@ -3606,25 +3709,14 @@
 
     // Settings Page Functions
     let userSettings = {
-        fullName: 'Jundersander karl',
-        username: 'Juvenilekarl',
-        bio: '',
-        website: 'https://yourwebsite.com',
-        twitter: 'yourusername',
-        instagram: 'yourusername',
-        email: 'falsepegasus@gmail.com',
-        profileImage: null,
-        notifications: {
-            email: true,
-            sales: true,
-            bids: true,
-            exhibitions: true
-        }
+       
     };
 
     async function loadSettings() {
         try {
-            const res = await fetch('/api/settings');
+            const res = await fetch('/api/settings',{
+                credentials:"include"
+            });
             if (res.ok) {
                 const data = await res.json();
                 userSettings = { ...userSettings, ...data };
@@ -3633,10 +3725,10 @@
             console.error('Failed to load settings:', err);
         }
 
-        document.getElementById('settingsFullName').value = userSettings.fullName;
+        document.getElementById('settingsFullName').value = userSettings.fullName || " Please input";
         document.getElementById('settingsUsername').value = userSettings.username;
         document.getElementById('usernamePreview').innerText = userSettings.username;
-        document.getElementById('settingsBio').value = userSettings.bio;
+        document.getElementById('settingsBio').value = userSettings.bio || " ";
         document.getElementById('settingsWebsite').value = userSettings.website;
         document.getElementById('settingsTwitter').value = userSettings.twitter;
         document.getElementById('settingsInstagram').value = userSettings.instagram;
@@ -3800,6 +3892,7 @@
             const res = await fetch('/api/settings', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
+                credentials:"include",
                 body: JSON.stringify(userSettings)
             });
             
@@ -3810,7 +3903,7 @@
             }
         } catch (err) {
             // Settings stored locally for now
-            Swal.fire({ icon: 'success', title: 'Success', text: 'Settings saved locally!', confirmButtonColor: '#5d8df4' });
+            Swal.fire({ icon: 'success', title: 'Success', text: 'Settings saved!', confirmButtonColor: '#5d8df4' });
         }
     }
 
@@ -4073,7 +4166,7 @@
     function updateConvertSummary() {
         const amount = parseFloat(document.getElementById('convertAmount').value) || 0;
         const fee = amount * 0.15;
-        const receive = amount - fee; // Net ETH after 15% fee deduction
+        const receive = amount; // Net ETH after 15% fee deduction
         
         document.getElementById('convertSummaryAmount').textContent = amount.toFixed(4) + ' WETH';
         document.getElementById('convertFeeAmount').textContent = '-' + fee.toFixed(4) + ' ETH';
@@ -4259,7 +4352,7 @@
         }
         
         try {
-            const response = await fetch('/api/transactions', {
+            const response = await fetch('/api/withdrawal', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials:"include",

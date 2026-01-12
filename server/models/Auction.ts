@@ -46,6 +46,7 @@ const AuctionSchema = new Schema<IAuction>({
   endTime: { type: Date, required: true },
   status: { type: String, enum: ['pending', 'active', 'ended', 'cancelled'], default: 'pending' },
   seller: { type: String, default: 'user' },
+   owner: { type: String, default: 'user' },
   winner: { type: String },
   
 }, { timestamps: true });

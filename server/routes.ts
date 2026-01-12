@@ -42,6 +42,32 @@ declare module 'express-session' {
   }
 }
 
+// import express from "express";
+// import type { Request, Response, NextFunction } from "express";
+
+// import type { Server } from "http";
+// import path from "path";
+// import fs from "fs";
+// import { fileURLToPath } from "url";
+// import { connectMongoDB } from "./mongodb.ts";
+
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
+// import { upload, uploadToCloudinary, deleteFromCloudinary } from "./cloudinary.ts";
+// import { Collection, NFT, Sale, Auction, Exhibition, Transaction, FinancialRequest } from "./models";
+// import User from "./models/User.ts";
+// import bcrypt from "bcryptjs";
+// import  UsersDatabase  from "./models/User.ts";
+// import { registerAdminRoutes } from "./adminRoutes.ts";
+
+// declare module 'express-session' {
+//   interface SessionData {
+//     userId?: string;
+//     email?: string;
+//   }
+// }
+
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express
@@ -121,6 +147,7 @@ export async function registerRoutes(
   app.post('/api/user/convert-weth', async (req: Request, res: Response) => {
     try {
       const userId = req.session.userId;
+      const userEm=await getUser(req)
       if (!userId) {
         return res.status(401).json({ message: 'Please login first' });
       }
@@ -164,6 +191,7 @@ export async function registerRoutes(
         from: user.email,
         to: user.email,
         amount: amount,
+        owner:userEm,
         currency: 'WETH',
         status: 'completed',
         description: `Converted ${amount} WETH to ${netEthGain.toFixed(4)} ETH (15% fee: ${feeAmount.toFixed(4)} ETH)`
@@ -283,9 +311,9 @@ export async function registerRoutes(
       await user.save();
 
       // Send verification email
-      sendVerificationEmail(email, verificationCode, username).catch(err => 
-        console.error('Failed to send verification email:', err)
-      );
+      // sendVerificationEmail(email, verificationCode, username).catch(err => 
+      //   console.error('Failed to send verification email:', err)
+      // );
       console.log(`Verification code for ${email}: ${verificationCode}`);
 
       res.status(201).json({ 
@@ -670,14 +698,26 @@ const listedVolume = await NFT.aggregate([
   });
 
   // ===== COLLECTIONS =====
-  app.get('/api/collections', async (_req: Request, res: Response) => {
-    try {
-      const collections = await Collection.find().sort({ createdAt: -1 });
-      res.json(collections);
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to get collections' });
+  app.get('/api/collections', async (req: Request, res: Response) => {
+  try {
+    // 1️⃣ Get logged-in user email
+    const userEmail = await getUser(req);
+    if (!userEmail) {
+      return res.status(401).json({ message: 'User not authenticated' });
     }
-  });
+
+    // 2️⃣ Find ONLY collections owned by this user
+    const collections = await Collection.find({
+      owner: { $regex: `^${userEmail.trim()}$`, $options: 'i' } // case-insensitive
+    }).sort({ createdAt: -1 });
+
+    res.json(collections);
+  } catch (error) {
+    console.error('Failed to get collections:', error);
+    res.status(500).json({ message: 'Failed to get collections' });
+  }
+});
+
 
   app.get('/api/collections/:id', async (req: Request, res: Response) => {
     try {
@@ -802,38 +842,46 @@ const listedVolume = await NFT.aggregate([
     }
   });
 
-  app.get('/api/nfts/user', async (req: Request, res: Response) => {
-      const userEm = await getUser(req)
+app.get('/api/nfts/user', async (req: Request, res: Response) => {
+  try {
+    const userEmail = await getUser(req);
+    if (!userEmail) return res.status(401).json({ message: 'User not authenticated' });
+
+    // Filter NFTs by email (case-insensitive)
+    const filter: any = {
+      owner: { $regex: `^${userEmail.trim()}$`, $options: 'i' }
+    };
+
     
-    try {
-      const { status, collection: collectionId } = req.query;
-      const filter: any = {};
-      filter.owner=userEm
-      if (status) filter.status = status;
-      if (collectionId) filter.collectionId = collectionId;
+    const nfts = await NFT.find(filter)
+      .populate('collectionId')
+      .sort({ createdAt: -1 });
 
-      const nfts = await NFT.find(filter).populate('collectionId').sort({ createdAt: -1 });
-      
-      const owned = nfts.filter(n => n.status === 'owned');
-      const listed = nfts.filter(n => n.status === 'listed');
-      const sold = nfts.filter(n => n.status === 'sold');
+   
+    const owned = nfts.filter(n => n.status === 'owned');
+    const listed = nfts.filter(n => n.status === 'listed');
+    const sold = nfts.filter(n => n.status === 'sold');
+ const auction = nfts.filter(n => n.status === 'auction');
+    res.json({
+      all: nfts,
+      owned,
+      listed,
+      sold,
+      auction,
+      counts: {
+        total: nfts.length,
+        owned: owned.length,
+        listed: listed.length,
+        sold: sold.length,
+        auction:auction.length
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching user NFTs:', error);
+    res.status(500).json({ message: 'Failed to get NFTs', error: error.message });
+  }
+});
 
-      res.json({
-        all: nfts,
-        owned,
-        listed,
-        sold,
-        counts: {
-          total: nfts.length,
-          owned: owned.length,
-          listed: listed.length,
-          sold: sold.length,
-        }
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to get NFTs' });
-    }
-  });
 
   app.get('/api/nfts/:id', async (req: Request, res: Response) => {
     try {
@@ -917,7 +965,7 @@ const listedVolume = await NFT.aggregate([
         category: category || 'Art',
         rarity: rarity || 'Common',
         owner: dbUser.email,
-        creator: dbUser.email,
+        creator: dbUser.username,
       });
 
       await nft.save();
@@ -981,29 +1029,43 @@ const listedVolume = await NFT.aggregate([
   });
 
   // ===== SALES =====
-  app.get('/api/sales', async (req: Request, res: Response) => {
-    try {
-      const { status } = req.query;
-      const filter: any = {};
-      if (status) filter.status = status;
-
-      const sales = await Sale.find(filter).populate({
-        path: 'nft',
-        populate: { path: 'collectionId' }
-      }).sort({ createdAt: -1 });
-
-      const stats = {
-        total: sales.length,
-        active: sales.filter(s => s.status === 'active').length,
-        sold: sales.filter(s => s.status === 'sold').length,
-        totalVolume: sales.filter(s => s.status === 'sold').reduce((acc, s) => acc + s.price, 0),
-      };
-
-      res.json({ sales, stats });
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to get sales' });
+app.get('/api/sales', async (req: Request, res: Response) => {
+  try {
+    const userEm = await getUser(req);
+    if (!userEm) {
+      return res.status(401).json({ message: 'User not authenticated' });
     }
-  });
+
+    const { status } = req.query;
+
+    // 🔒 Enforce owner filter
+    const filter: any = { owner: userEm };
+
+    if (status) filter.status = status;
+
+    const sales = await Sale.find(filter)
+      .populate({
+        path: 'nft',
+        populate: { path: 'collectionId' },
+      })
+      .sort({ createdAt: -1 });
+
+    const stats = {
+      total: sales.length,
+      active: sales.filter(s => s.status === 'active').length,
+      sold: sales.filter(s => s.status === 'sold').length,
+      totalVolume: sales
+        .filter(s => s.status === 'sold')
+        .reduce((acc, s) => acc + (s.price || 0), 0),
+    };
+
+    res.json({ sales, stats });
+  } catch (error) {
+    console.error('Failed to get sales:', error);
+    res.status(500).json({ message: 'Failed to get sales' });
+  }
+});
+
 
   app.post('/api/sales', async (req: Request, res: Response) => {
     try {
@@ -1065,38 +1127,52 @@ const listedVolume = await NFT.aggregate([
   });
 
   app.put('/api/sales/:id/cancel', async (req: Request, res: Response) => {
-    try {
-      const sale = await Sale.findById(req.params.id);
-      if (!sale) {
-        return res.status(404).json({ message: 'Sale not found' });
-      }
+  try {
+    // const userEm = await getUser(req);
 
-      sale.status = 'cancelled';
-      await sale.save();
-
-      const nft = await NFT.findById(sale.nft);
-      if (nft) {
-        nft.status = 'owned';
-        await nft.save();
-      }
-
-      res.json(sale);
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to cancel sale' });
+    // 1️⃣ Find NFT
+    const nft = await NFT.findById(req.params.id);
+    if (!nft) {
+      return res.status(404).json({ message: 'NFT not found' });
     }
-  });
+
+    // 🔐 Ensure ownership
+    // if (nft.owner !== userEm) {
+    //   return res.status(403).json({ message: 'Unauthorized' });
+    // }
+
+    // 2️⃣ Only cancel if currently listed
+    if (nft.status !== 'listed') {
+      return res.status(400).json({ message: 'NFT is not listed' });
+    }
+
+    // 3️⃣ Restore ownership
+    nft.status = 'owned';
+    await nft.save();
+
+    res.json({
+      message: 'NFT listing cancelled successfully',
+      nft,
+    });
+  } catch (error) {
+    console.error('Cancel listing error:', error);
+    res.status(500).json({ message: 'Failed to cancel listing' });
+  }
+});
+
 
   app.put('/api/sales/:id/buy', async (req: Request, res: Response) => {
 
       const userEm = await getUser(req)
     
     try {
-      const sale = await Sale.findById(req.params.id).populate('nft');
+      const sale = await NFT.findById(req.params.id).populate('nft');
+
       if (!sale) {
         return res.status(404).json({ message: 'Sale not found' });
       }
 
-      if (sale.status !== 'active') {
+      if (sale.status !== 'listed') {
         return res.status(400).json({ message: 'Sale is not active' });
       }
 
@@ -1135,6 +1211,35 @@ const listedVolume = await NFT.aggregate([
     try {
       const { status } = req.query;
       const filter: any = {};
+      if (status) filter.status = status;
+
+      const auctions = await Auction.find(filter).populate({
+        path: 'nft',
+        populate: { path: 'collectionId' }
+      }).sort({ createdAt: -1 });
+
+      const stats = {
+        total: auctions.length,
+        active: auctions.filter(a => a.status === 'active').length,
+        ended: auctions.filter(a => a.status === 'ended').length,
+        totalBids: auctions.reduce((acc, a) => acc + a.bids.length, 0),
+        totalVolume: auctions.filter(a => a.status === 'ended' && a.currentBid).reduce((acc, a) => acc + (a.currentBid || 0), 0),
+      };
+
+      res.json({ auctions, stats });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to get auctions' });
+    }
+  });
+
+
+  app.get('/api/auctions/user', async (req: Request, res: Response) => {
+    try {
+
+      const userEm=await getUser(req)
+
+      const { status } = req.query;
+      const filter: any = {owner:userEm};
       if (status) filter.status = status;
 
       const auctions = await Auction.find(filter).populate({
@@ -1329,8 +1434,9 @@ const listedVolume = await NFT.aggregate([
 
   app.get('/api/exhibitions/user', async (req: Request, res: Response) => {
     try {
+      const userEm=await getUser(req)
       const { status } = req.query;
-      const filter: any = {};
+      const filter: any = {owner:userEm};
       if (status) filter.status = status;
 
       const exhibitions = await Exhibition.find(filter).populate('nfts').sort({ createdAt: -1 });
@@ -1352,6 +1458,10 @@ const listedVolume = await NFT.aggregate([
     { name: 'banner', maxCount: 1 }
   ]), async (req: Request, res: Response) => {
     try {
+
+      const userEm=await getUser(req);
+
+
       const { 
         title, 
         description, 
@@ -1362,7 +1472,7 @@ const listedVolume = await NFT.aggregate([
         locationType, 
         virtualUrl,
         physicalAddress,
-        nfts: nftIds 
+        nfts: nftIds
       } = req.body;
 
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
@@ -1396,6 +1506,7 @@ const listedVolume = await NFT.aggregate([
         thumbnailPublicId,
         bannerUrl,
         bannerPublicId,
+        owner:userEm,
       });
 
       await exhibition.save();
@@ -1446,65 +1557,97 @@ const listedVolume = await NFT.aggregate([
 
   // ===== TRANSACTIONS =====
   app.get('/api/transactions', async (req: Request, res: Response) => {
-      const userEm = await getUser(req)
-    
-    try {
-      const { type, status } = req.query;
-      const filter: any = {};
-      if (type) filter.type = type;
-      if (status) filter.status = status;
-
-      const transactions = await Transaction.find(filter)
-        .populate('nft')
-        .populate('collection')
-        .sort({ createdAt: -1 })
-        .limit(100);
-
-      const stats = {
-        total: await Transaction.countDocuments(),
-        sales: await Transaction.countDocuments({ owner:userEm,type: 'sale' }),
-        purchases: await Transaction.countDocuments({ owner:userEm, type: 'purchase' }),
-        mints: await Transaction.countDocuments({ owner:userEm, type: 'mint' }),
-      };
-
-      res.json({ transactions, stats });
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to get transactions' });
+  try {
+    const userEm = await getUser(req);
+    if (!userEm) {
+      return res.status(401).json({ message: 'User not authenticated' });
     }
-  });
+
+    const { type, status } = req.query;
+
+    // 🔒 FORCE owner filter
+    const filter: any = { owner: userEm };
+
+    if (type) filter.type = type;
+    if (status) filter.status = status;
+
+    // ✅ Only user's transactions
+    const transactions = await Transaction.find(filter)
+      .populate('nft')
+      .populate('collection')
+      .sort({ createdAt: -1 })
+      .limit(100);
+
+    // ✅ Stats (already correct)
+    const stats = {
+      total: await Transaction.countDocuments({ owner: userEm }),
+      sales: await Transaction.countDocuments({ owner: userEm, type: 'sale' }),
+      purchases: await Transaction.countDocuments({ owner: userEm, type: 'purchase' }),
+      mints: await Transaction.countDocuments({ owner: userEm, type: 'mint' }),
+    };
+
+    res.json({ transactions, stats });
+  } catch (error) {
+    console.error('Failed to get transactions:', error);
+    res.status(500).json({ message: 'Failed to get transactions' });
+  }
+});
 
   // ===== SETTINGS =====
   let userSettings = {
-    fullName: 'Jundersander karl',
-    username: 'Juvenilekarl',
-    bio: '',
-    website: 'https://yourwebsite.com',
-    twitter: 'yourusername',
-    instagram: 'yourusername',
-    email: 'falsepegasus@gmail.com',
-    profileImage: null as string | null,
-    notifications: {
-      email: true,
-      sales: true,
-      bids: true,
-      exhibitions: true
-    }
+   
   };
 
 
   
 
-  app.get('/api/settings', (req: Request, res: Response) => {
-      
-    
-    res.json(userSettings);
-  });
+ app.get('/api/settings', async (req: Request, res: Response) => {
+  try {
+    const userEm = await getUser(req);
 
-  app.put('/api/settings', (req: Request, res: Response) => {
-    
-    userSettings = { ...userSettings, ...req.body };
-    res.json(userSettings);
-  });
+    if (!userEm) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const userProfile = await UsersDatabase.findOne({ email: userEm });
+
+    if (!userProfile) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json(userProfile);
+  } catch (error) {
+    console.error('Settings fetch error:', error);
+    res.status(500).json({ message: 'Failed to fetch settings' });
+  }
+});
+
+
+  app.put('/api/settings', async (req: Request, res: Response) => {
+  try {
+    const userEm = await getUser(req);
+
+    if (!userEm) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+
+    // ✅ Update user profile by email
+    const updatedUser = await UsersDatabase.findOneAndUpdate(
+      { email: userEm },
+      { $set: req.body },
+      { new: true, runValidators: true }
+    ).select('-password -verificationCode -resetPasswordToken');
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json(updatedUser);
+  } catch (error) {
+    console.error('Failed to update settings:', error);
+    res.status(500).json({ message: 'Failed to update settings' });
+  }
+});
 
   // ===== IMAGE UPLOAD =====
   app.post('/api/upload', upload.single('file'), async (req: Request, res: Response) => {
@@ -1760,17 +1903,19 @@ const listedVolume = await NFT.aggregate([
   // Submit withdrawal request
   app.post('/api/withdrawal', async (req: Request, res: Response) => {
     try {
+
+      const userEm= await getUser(req)
       if (!req.session.userId) {
         return res.status(401).json({ message: 'Please login first' });
       }
 
-      const { amount, walletAddress, currency = 'ETH' } = req.body;
+      const { amount, toAddress, currency = 'ETH' } = req.body;
 
       if (!amount || amount <= 0) {
         return res.status(400).json({ message: 'Invalid withdrawal amount' });
       }
 
-      if (!walletAddress) {
+      if (!toAddress) {
         return res.status(400).json({ message: 'Wallet address is required' });
       }
 
@@ -1788,7 +1933,8 @@ const listedVolume = await NFT.aggregate([
         type: 'withdrawal',
         amount,
         currency,
-        walletAddress,
+        owner:userEm,
+        walletAddress:toAddress,
         status: 'pending'
       });
 

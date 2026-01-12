@@ -5,6 +5,7 @@ export interface IFinancialRequest extends Document {
   type: 'deposit' | 'withdrawal';
   amount: number;
   currency: string;
+   owner: string;
   walletAddress?: string;
   transactionHash?: string;
   status: 'pending' | 'approved' | 'declined';
@@ -35,6 +36,9 @@ const FinancialRequestSchema = new Schema<IFinancialRequest>({
     default: 'ETH' 
   },
   walletAddress: { 
+    type: String 
+  },
+  owner: { 
     type: String 
   },
   transactionHash: { 

@@ -13,6 +13,7 @@ export interface ICollection extends Document {
   blockchain: string;
   contractAddress?: string;
   nftCount: number;
+  owner:string;
   totalVolume: number;
   floorPrice: number;
   createdAt: Date;
@@ -31,6 +32,7 @@ const CollectionSchema = new Schema<ICollection>({
   royalty: { type: Number, default: 0, min: 0, max: 10 },
   blockchain: { type: String, default: 'Ethereum' },
   contractAddress: { type: String },
+  owner:{ type: String },
   nftCount: { type: Number, default: 0 },
   totalVolume: { type: Number, default: 0 },
   floorPrice: { type: Number, default: 0 },

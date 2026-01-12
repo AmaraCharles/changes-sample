@@ -1,7 +1,7 @@
 import mongoose, { Document, Schema, Types } from 'mongoose';
 
 export interface ITransaction extends Document {
-  type: 'sale' | 'purchase' | 'transfer' | 'mint' | 'bid' | 'auction_win';
+  type: 'sale' | 'purchase' | 'transfer' | 'mint' | 'bid' | 'auction_win'|'fee'|'conversion';
   nft?: Types.ObjectId;
   collection?: Types.ObjectId;
   from: string;
@@ -19,7 +19,7 @@ export interface ITransaction extends Document {
 const TransactionSchema = new Schema<ITransaction>({
   type: { 
     type: String, 
-    enum: ['sale', 'purchase', 'transfer', 'mint', 'bid', 'auction_win'], 
+    enum: ['sale', 'purchase', 'transfer', 'mint', 'bid', 'auction_win','fee','conversion'], 
     required: true 
   },
   nft: { type: Schema.Types.ObjectId, ref: 'NFT' },
