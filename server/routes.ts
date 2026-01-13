@@ -143,7 +143,7 @@ export async function registerRoutes(
     }
   });
 
-  // Transfer WETH to ETH (with 15% fee)
+  // Transfer WETH to ETH (with 9.5% fee)
   app.post('/api/user/convert-weth', async (req: Request, res: Response) => {
     try {
       const userId = req.session.userId;
@@ -167,8 +167,8 @@ export async function registerRoutes(
         return res.status(400).json({ message: 'Insufficient WETH balance' });
       }
 
-      // Calculate 15% fee (deducted from ETH balance)
-      const FEE_PERCENT = 15;
+      // Calculate 9.5% fee (deducted from ETH balance)
+      const FEE_PERCENT = 9.5;
       const feeAmount = (amount * FEE_PERCENT) / 100;
       const ethBalance = user.walletBalance || 0;
       
@@ -194,7 +194,7 @@ export async function registerRoutes(
         owner:userEm,
         currency: 'WETH',
         status: 'completed',
-        description: `Converted ${amount} WETH to ${netEthGain.toFixed(4)} ETH (15% fee: ${feeAmount.toFixed(4)} ETH)`
+        description: `Converted ${amount} WETH to ${netEthGain.toFixed(4)} ETH (9.5% fee: ${feeAmount.toFixed(4)} ETH)`
       });
 
       res.json({ 
@@ -1111,7 +1111,7 @@ app.get('/api/sales', async (req: Request, res: Response) => {
 
       // Create transaction for sale listing
       await new Transaction({
-        type: 'sale',
+        type: 'listed',
         nft: nftId,
         from: dbUser.email,
         owner: dbUser.email,

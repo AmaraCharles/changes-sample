@@ -1397,7 +1397,7 @@
                 <div class="d-flex gap-2 mb-4 overflow-auto pb-2" id="transactionTabs">
                     <button class="btn btn-light btn-sm border rounded-3 px-3 active" onclick="filterTransactions('all', this)">All</button>
                     <button class="btn btn-light btn-sm border rounded-3 px-3" onclick="filterTransactions('buy', this)">Buys</button>
-                    <button class="btn btn-light btn-sm border rounded-3 px-3" onclick="filterTransactions('sale', this)">Sales</button>
+                    <button class="btn btn-light btn-sm border rounded-3 px-3" onclick="filterTransactions('sold', this)">Sales</button>
                     <button class="btn btn-light btn-sm border rounded-3 px-3" onclick="filterTransactions('conversion', this)">Conversions</button>
                     <button class="btn btn-light btn-sm border rounded-3 px-3" onclick="filterTransactions('other', this)">Other</button>
                 </div>
@@ -2308,22 +2308,20 @@
             <script>
 const CATEGORY_TAGS = {
   Art: [
-    'Digital Art',
-    'Abstract',
-    'Illustration',
-    '3D Art',
-    'Pixel Art',
-    'AI Art',
-    'Concept Art'
+    'Mixed-Media',
+    'Drawing',
+    'Painting',
+    'Installation',
+    'Sculpture',
   ],
   Photography: [
-    'Portrait',
+    'Advertisement',
+    'Conceptual',
+    'Documentary',
+    'Editorial',
+    'Travel',
     'Landscape',
-    'Street',
-    'Nature',
-    'Black & White',
-    'Macro',
-    'Urban'
+    'Fashion'
   ],
   Music: [
     'Hip Hop',
@@ -2575,7 +2573,7 @@ categorySelect.addEventListener('change', (e) => {
         <div class="vx-modal-body" id="depositModalBody">
             <div class="vx-card mb-4">
                 <h4 class="fw-bold mb-2">Deposit ETH</h4>
-                <p class="text-muted mb-0">Send ETH to the platform wallet and request approval</p>
+                <p class="text-muted mb-0">Send ETH to your platform wallet and request approval</p>
             </div>
             
             <div class="vx-card mb-4">
@@ -2608,7 +2606,7 @@ categorySelect.addEventListener('change', (e) => {
                     <div>
                         <h6 class="fw-bold mb-2">Deposit Instructions:</h6>
                         <ol class="mb-0 ps-3 text-muted small">
-                            <li class="mb-1">Send ETH to the platform wallet address above</li>
+                            <li class="mb-1">Send ETH to your platform wallet address above</li>
                             <li class="mb-1">Wait for transaction confirmation</li>
                             <li class="mb-1">Fill out the form below with transaction details</li>
                             <li class="mb-1">Wait for admin approval (usually within 24 hours)</li>
@@ -2630,11 +2628,11 @@ categorySelect.addEventListener('change', (e) => {
                     </div>
                 </div>
                 
-                <div class="mb-4">
+                <!-- <div class="mb-4">
                     <label class="form-label fw-semibold">Transaction Hash <span class="text-danger">*</span></label>
                     <input type="text" class="form-control" id="depositTxHash" placeholder="0x..." required>
-                    <small class="text-muted">Enter the transaction hash from your wallet after sending ETH</small>
-                </div>
+                    <small class="text-muted">Enter the  from your wallet after sending ETH</small>
+                </div> -->
                 
                 <button type="submit" class="btn btn-primary w-100 py-2 rounded-3 fw-bold" style="background: #5d8df4; border: none;">
                     Submit Deposit Request
@@ -2720,7 +2718,7 @@ categorySelect.addEventListener('change', (e) => {
                     </div>
                     <div class="d-flex justify-content-between mb-2">
                         <span class="text-muted small">Network Fee (est.)</span>
-                        <span class="small">~0.001 ETH</span>
+                        <span class="small">~</span>
                     </div>
                     <hr class="my-2">
                     <div class="d-flex justify-content-between">
@@ -2769,8 +2767,8 @@ categorySelect.addEventListener('change', (e) => {
                 <div class="d-flex align-items-start gap-2">
                     <i class="bi bi-exclamation-triangle"></i>
                     <div>
-                        <strong>15% Conversion Fee</strong>
-                        <p class="mb-0 small">A 15% fee will be deducted from your ETH balance when converting.</p>
+                        <strong>9.5% Conversion Fee</strong>
+                        <p class="mb-0 small">A 9.5% fee will be deducted from your ETH balance when converting.</p>
                     </div>
                 </div>
             </div>
@@ -3161,6 +3159,14 @@ console.log(unlistedNfts);
         renderNftsPage();
     }
     
+    async function cancelSale(id) {
+        try {
+            await fetch(`/api/sales/${id}/cancel`, { method: 'PUT' });
+            loadSales();
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to cancel sale', confirmButtonColor: '#5d8df4' });
+        }
+    }
     function renderNftsPage() {
         const container = document.getElementById('nftsPageGrid');
         if (!container) return;
@@ -3194,9 +3200,16 @@ console.log(unlistedNfts);
                     <h6 class="fw-bold mb-1">${nft.name}</h6>
                     <p class="text-muted small mb-2">${nft.collection?.name || 'No Collection'}</p>
                     <div class="d-flex justify-content-between align-items-center gap-2">
-                        ${nft.status === 'listed' ? `<span class="badge bg-success">${nft.price} ${nft.currency || 'ETH'}</span>` : `<button class="btn btn-sm btn-outline-primary" onclick="openQuickListModal('${nft._id}', '${nft.name.replace(/'/g, "\\'")}')">List for Sale</button>`}
+                        ${nft.status === 'listed' ? `<span class="badge bg-success">${nft.price} ${nft.currency || 'ETH'}</span>
+                        <div class="d-flex gap-1">
+                           <button class="btn btn-sm btn-outline-danger" onclick="cancelSale('${nft._id}')">Delist</button>
+                        </div>` : `<button class="btn btn-sm btn-outline-primary" onclick="openQuickListModal('${nft._id}', '${nft.name.replace(/'/g, "\\'")}')">List for Sale</button>`}
                         <div class="d-flex gap-1">
                             <button class="btn btn-sm btn-outline-secondary" onclick="viewNftDetails('${nft._id}')" title="View"><i class="bi bi-eye"></i></button>
+                        </div>
+
+                         <div class="d-flex gap-1">
+                           <button class="btn btn-sm btn-outline-danger" onclick="cancelSale('${nft._id}')">Cancel</button>
                         </div>
                     </div>
                 </div>
@@ -3419,6 +3432,7 @@ credentials:"include",
     async function cancelSale(id) {
         try {
             await fetch(`/api/sales/${id}/cancel`, { method: 'PUT' });
+            alert("Delisted")
             loadSales();
         } catch (err) {
             Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to cancel sale', confirmButtonColor: '#5d8df4' });
@@ -3652,26 +3666,47 @@ credentials:"include"
         }
         
         container.innerHTML = `
-            <table class="table table-borderless align-middle mb-0">
-                <thead class="text-muted small border-bottom">
-                    <tr>
-                        <th class="pb-3 fw-medium">Type</th>
-                        <th class="pb-3 fw-medium">Description</th>
-                        <th class="pb-3 fw-medium">Amount</th>
-                        <th class="pb-3 fw-medium">Date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${filtered.map(t => `
-                        <tr>
-                            <td><span class="badge bg-${t.type === 'sale' ? 'success' : t.type === 'purchase' ? 'primary' : t.type === 'mint' ? 'info' : 'secondary'}">${t.type}</span></td>
-                            <td>${t.description}</td>
-                            <td>${t.amount ? t.amount + ' ' + t.currency : '-'}</td>
-                            <td>${new Date(t.createdAt).toLocaleDateString()}</td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>`;
+            <div class="table-responsive">
+  <table class="table table-borderless align-middle mb-0 text-nowrap">
+    <thead class="text-muted small border-bottom">
+      <tr>
+        <th class="pb-3 fw-medium">Type</th>
+        <th class="pb-3 fw-medium">Description</th>
+        <th class="pb-3 fw-medium">Amount</th>
+        <th class="pb-3 fw-medium">Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${filtered.map(t => `
+        <tr>
+          <td>
+            <span class="badge bg-${
+              t.type === 'sale'
+                ? 'success'
+                : t.type === 'purchase'
+                ? 'primary'
+                : t.type === 'mint'
+                ? 'info'
+                : 'secondary'
+            }">
+              ${t.type}
+            </span>
+          </td>
+          <td class="text-truncate" style="max-width: 240px;">
+            ${t.description}
+          </td>
+          <td>
+            ${t.amount ? `${t.amount} ${t.currency}` : '-'}
+          </td>
+          <td>
+            ${new Date(t.createdAt).toLocaleDateString()}
+          </td>
+        </tr>
+      `).join('')}
+    </tbody>
+  </table>
+</div>
+`;
     }
 
     function renderDashboardTransactions() {
@@ -4438,7 +4473,7 @@ credentials:"include"
     function updateWithdrawSummary() {
         const amount = parseFloat(document.getElementById('withdrawAmount').value) || 0;
         const currency = document.getElementById('withdrawCurrency').value;
-        const fee = 0.001;
+        const fee = 0;
         const receive = Math.max(0, amount - fee);
         
         document.getElementById('withdrawSummaryAmount').textContent = amount.toFixed(4) + ' ' + currency;
@@ -4954,7 +4989,7 @@ function getSelectedTags() {
 
     function viewMintedNFT() {
         closeMintModal();
-        showPage('collection');
+        showPage('nfts');
     }
 
     function mintAnother() {
