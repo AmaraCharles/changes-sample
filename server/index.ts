@@ -20,7 +20,9 @@ app.use(cors({
   origin: [
    
     "http://localhost:5000",
-    "https://clentmode.vercel.app"
+    "https://clentmode.vercel.app",
+    "https://www.ethergalleries.com",
+    "https://ethergalleries.com"
   ],
   credentials: true,
 }));
