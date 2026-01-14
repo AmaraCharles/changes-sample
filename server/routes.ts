@@ -310,7 +310,7 @@ export async function registerRoutes(
 
       await user.save();
 
-      Send verification email
+      // Send verification email
       sendVerificationEmail(email, verificationCode, username).catch(err => 
         console.error('Failed to send verification email:', err)
       );
