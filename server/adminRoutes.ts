@@ -14,14 +14,14 @@ declare module 'express-session' {
 }
 
 const requireAdmin = (req: Request, res: Response, next: Function) => {
-  if (!req.session._id) {
+  if (!req.session.adminId) {
     return res.status(401).json({ message: 'Admin authentication required' });
   }
   next();
 };
 
 const requireSuperAdmin = (req: Request, res: Response, next: Function) => {
-  if (!req.session._id) {
+  if (!req.session.adminId) {
     return res.status(401).json({ message: 'Admin authentication required' });
   }
   if (req.session.adminRole !== 'superadmin') {
@@ -82,10 +82,14 @@ export function registerAdminRoutes(app: Express) {
       admin.lastLogin = new Date();
       await admin.save();
 
-      req.session._id = admin._id.toString();
+      req.session.adminId = admin._id.toString();
       req.session.adminEmail = admin.email;
       req.session.adminRole = admin.role;
-
+  req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.status(500).json({ message: 'Login succeeded but session failed' });
+      }
       res.json({ 
         message: 'Admin login successful',
         admin: {
@@ -94,6 +98,7 @@ export function registerAdminRoutes(app: Express) {
           role: admin.role
         }
       });
+      });
     } catch (error) {
       console.error('Admin login error:', error);
       res.status(500).json({ message: 'Failed to login' });
@@ -101,7 +106,7 @@ export function registerAdminRoutes(app: Express) {
   });
 
   app.post('/api/admin/logout', (req: Request, res: Response) => {
-    req.session._id = undefined;
+    req.session.adminId = undefined;
     req.session.adminEmail = undefined;
     req.session.adminRole = undefined;
     req.session.impersonatedUserId = undefined;
@@ -109,7 +114,7 @@ export function registerAdminRoutes(app: Express) {
   });
 
   app.get('/api/admin/session', (req: Request, res: Response) => {
-    if (req.session._id) {
+    if (req.session.adminId) {
       res.json({ 
         authenticated: true,
         email: req.session.adminEmail,
@@ -531,7 +536,7 @@ export function registerAdminRoutes(app: Express) {
 
       request.status = 'approved';
       request.adminNote = adminNote;
-      request.processedBy = req.session._id as any;
+      request.processedBy = req.session.adminId as any;
       request.processedAt = new Date();
       await request.save();
 
@@ -578,7 +583,7 @@ export function registerAdminRoutes(app: Express) {
 
       request.status = 'declined';
       request.adminNote = adminNote || 'Request declined by admin';
-      request.processedBy = req.session._id as any;
+      request.processedBy = req.session.adminId as any;
       request.processedAt = new Date();
       await request.save();
 
