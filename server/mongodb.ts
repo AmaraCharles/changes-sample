@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/vaultorx';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/Ethergalleries';
 
 export async function connectMongoDB(): Promise<void> {
   try {

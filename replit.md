@@ -1,8 +1,8 @@
-# Vaultorx NFT Marketplace
+# Ethergalleries NFT Marketplace
 
 ## Overview
 
-Vaultorx is an NFT marketplace dashboard built with pure HTML, CSS, and JavaScript on the frontend with a Node.js/Express backend. The platform enables users to manage NFT collections, track sales and auctions, create virtual exhibitions, and monitor transaction activity. Uses MongoDB for all data storage.
+Ethergalleries is an NFT marketplace dashboard built with pure HTML, CSS, and JavaScript on the frontend with a Node.js/Express backend. The platform enables users to manage NFT collections, track sales and auctions, create virtual exhibitions, and monitor transaction activity. Uses MongoDB for all data storage.
 
 ## User Preferences
 

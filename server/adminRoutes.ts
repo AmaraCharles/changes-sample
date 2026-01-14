@@ -392,7 +392,7 @@ export function registerAdminRoutes(app: Express) {
         }
       }
 
-      nft.owner = buyerEmail || 'admin@vaultorx.com';
+      nft.owner = buyerEmail || 'admin@Ethergalleries.com';
       nft.status = 'owned';
       await nft.save();
 

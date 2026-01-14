@@ -28,7 +28,7 @@ export const upload = multer({
 
 export async function uploadToCloudinary(
   buffer: Buffer,
-  folder: string = 'vaultorx'
+  folder: string = 'Ethergalleries'
 ): Promise<{ url: string; publicId: string }> {
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(

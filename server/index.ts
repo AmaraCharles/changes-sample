@@ -29,7 +29,7 @@ app.use(cors({
 app.set("trust proxy", 1); // REQUIRED in prod
 
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'vaultorx-dev-secret-key-2024',
+  secret: process.env.SESSION_SECRET || 'Ethergalleries-dev-secret-key-2024',
   resave: false,
   saveUninitialized: false,
   cookie: {
@@ -184,7 +184,7 @@ app.get('*', (req, res) => {
 
 // // Session middleware
 // // app.use(session({
-// //   secret: process.env.SESSION_SECRET || 'vaultorx-dev-secret-key-2024',
+// //   secret: process.env.SESSION_SECRET || 'Ethergalleries-dev-secret-key-2024',
 // //   resave: false,
 // //   saveUninitialized: false,
 // //   cookie: {
