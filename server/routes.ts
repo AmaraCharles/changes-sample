@@ -643,7 +643,7 @@ app.post('/api/auth/login', async (req: Request, res: Response) => {
 
   // ===== DASHBOARD STATS =====
   app.get('/api/stats', async (req: Request, res: Response) => {
-    const userId = getUser(req)
+    const userId =await getUser(req)
 
     const user = await UsersDatabase.findOne({ email:userId });
 
