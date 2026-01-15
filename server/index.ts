@@ -26,20 +26,20 @@ app.use(cors({
   ],
   credentials: true,
 }));
-app.set("trust proxy", 1); // REQUIRED in prod
+app.set("trust proxy", 1);
 
 app.use(session({
+  name: "ethergalleries.sid",
   secret: process.env.SESSION_SECRET || 'Ethergalleries-dev-secret-key-2024',
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: true,          // 🔥 ALWAYS TRUE on Render
     httpOnly: true,
-    sameSite:"none",
-    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    sameSite: "none",      // 🔥 REQUIRED
+    maxAge: 7 * 24 * 60 * 60 * 1000
   }
 }));
-
 
 // app.use(
 //   session({
