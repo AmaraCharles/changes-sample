@@ -138,34 +138,19 @@ export async function registerRoutes(
 }
 
 async function getUserId(req: Request): Promise<string> {
-  try {
-    // 1️⃣ Read token from Authorization header
-    const authHeader = req.headers['authorization'];
-    console.log(req.headers);
-    
-    if (!authHeader) throw new Error("No token provided");
+  const authHeader = req.headers.authorization;
+  if (!authHeader) throw new Error("No token");
 
-    const token = authHeader.split(' ')[1]; // "Bearer <token>"
-    if (!token) throw new Error("Invalid token");
+  const token = authHeader.split(" ")[1];
 
-    // 2️⃣ Verify JWT
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'super-secret-key') as any;
-    const userId = decoded.userId;
+  const decoded = jwt.verify(
+    token,
+    process.env.JWT_SECRET || "super-secret-key"
+  ) as { userId: string };
 
-    if (!userId) throw new Error("Invalid token payload");
-
-    // 3️⃣ Fetch user from database
-    const user = await User.findById(userId);
-    if (!user) throw new Error("User not found");
-
-    // 4️⃣ Return ID
-    return userId;
-
-  } catch (err) {
-    console.error("getUser error:", err);
-    throw new Error("Unauthorized");
-  }
+  return decoded.userId; // already a string ✅
 }
+
 
   // Get user balance (both ETH and WETH)
   app.get('/api/user/balance', async (req: Request, res: Response) => {
