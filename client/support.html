@@ -376,14 +376,14 @@
     <!-- Header -->
     <header class="vx-header">
         <div class="vx-header-content">
-            <a href="/marketplace" class="vx-logo">
+            <a href="/marketplace.html" class="vx-logo">
                 <div class="vx-logo-icon">
-                    <i class="bi bi-gem"></i>
+                    
                 </div>
-                Ethergalleries
+               <img src="./logo.png" width="150" height="50" alt="">
             </a>
             <nav class="vx-nav">
-                <a href="/marketplace">Marketplace</a>
+                <a href="/marketplace.html">Marketplace</a>
                 <a href="category.html">Explore</a>
                 <a href="support.html" class="text-primary">Support</a>
                 <a href="/dashboard.html">Dashboard</a>
@@ -694,7 +694,7 @@
             const data = Object.fromEntries(formData.entries());
 
             try {
-                const res = await fetch('/api/support', {
+                const res = await fetch('https://changes-sample.onrender.com/api/support', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)

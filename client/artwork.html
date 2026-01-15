@@ -456,15 +456,11 @@
 <body>
     <header class="vx-header">
         <div class="vx-header-inner">
-            <a href="/marketplace" class="vx-logo">
+            <a href="/marketplace.html" class="vx-logo">
                 <div class="vx-logo-icon">
-                    <svg viewBox="0 0 24 24" fill="none">
-                        <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#1e293b"/>
-                        <path d="M2 17L12 22L22 17" stroke="#1e293b" stroke-width="2" stroke-linecap="round"/>
-                        <path d="M2 12L12 17L22 12" stroke="#1e293b" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
+                   
                 </div>
-                Ethergalleries
+                 <img src="./logo.png" width="150" height="50" alt="">
             </a>
             <div class="vx-header-actions">
                 <a href="/dashboard.html" class="vx-btn-login"><i class="bi bi-box-arrow-in-right"></i> Login</a>
@@ -503,7 +499,7 @@
                     <div class="vx-loading">
                         <i class="bi bi-exclamation-circle" style="font-size: 3rem;"></i>
                         <h4>Artwork not found</h4>
-                        <a href="/marketplace" class="vx-buy-btn" style="display: inline-block; margin-top: 1rem;">Back to Marketplace</a>
+                        <a href="/marketplace.html" class="vx-buy-btn" style="display: inline-block; margin-top: 1rem;">Back to Marketplace</a>
                     </div>
                 `;
             }
@@ -511,7 +507,7 @@
         
         async function loadArtwork(nftId) {
             try {
-                const res = await fetch('/api/marketplace/nfts');
+                const res = await fetch('https://changes-sample.onrender.com/api/marketplace/nfts');
                 if (!res.ok) throw new Error('Failed to load');
                 
                 const allNFTs = await res.json();
@@ -535,7 +531,7 @@
                     <div class="vx-loading">
                         <i class="bi bi-exclamation-circle" style="font-size: 3rem;"></i>
                         <h4>Error loading artwork</h4>
-                        <a href="/marketplace" class="vx-buy-btn" style="display: inline-block; margin-top: 1rem;">Back to Marketplace</a>
+                        <a href="/marketplace.html" class="vx-buy-btn" style="display: inline-block; margin-top: 1rem;">Back to Marketplace</a>
                     </div>
                 `;
             }
@@ -569,7 +565,7 @@
             
             document.getElementById('mainContent').innerHTML = `
                 <nav class="vx-breadcrumb">
-                    <a href="/marketplace">Marketplace</a>
+                    <a href="/marketplace.html">Marketplace</a>
                     <i class="bi bi-chevron-right"></i>
                     <a href="category.html?category=${encodeURIComponent(currentNFT.category || 'Art')}">${currentNFT.category || 'Art'}</a>
                     <i class="bi bi-chevron-right"></i>
@@ -629,8 +625,8 @@
                                 <div class="vx-meta-value">${new Date(currentNFT.createdAt).toLocaleDateString()}</div>
                             </div>
                             <div class="vx-meta-item">
-                                <div class="vx-meta-label">Owner</div>
-                                <div class="vx-meta-value">${currentNFT.owner || currentNFT.creator || 'Unknown'}</div>
+                                <div class="vx-meta-label">Creator</div>
+                                <div class="vx-meta-value">${ currentNFT.creator || 'Unknown'}</div>
                             </div>
                         </div>
                         
@@ -729,7 +725,7 @@
         }
         
         async function buyNFT() {
-            const sessionRes = await fetch('/api/auth/session');
+            const sessionRes = await fetch('https://changes-sample.onrender.com/api/auth/session');
             const session = await sessionRes.json();
             
             if (!session.authenticated) {

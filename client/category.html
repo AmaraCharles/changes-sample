@@ -545,15 +545,11 @@
 <body>
     <header class="vx-header">
         <div class="vx-header-inner">
-            <a href="/marketplace" class="vx-logo">
+            <a href="/marketplace.html" class="vx-logo">
                 <div class="vx-logo-icon">
-                    <svg viewBox="0 0 24 24" fill="none">
-                        <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#1e293b"/>
-                        <path d="M2 17L12 22L22 17" stroke="#1e293b" stroke-width="2" stroke-linecap="round"/>
-                        <path d="M2 12L12 17L22 12" stroke="#1e293b" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
+                   
                 </div>
-                Ethergalleries
+                 <img src="./logo.png" width="150" height="50" alt="">
             </a>
             
             <div class="vx-search-container">
@@ -595,8 +591,8 @@
                 <li class="vx-category-item" data-category="Fashion">Fashion</li>
                 <li class="vx-category-item" data-category="3D Art">3D Art</li>
                 <li class="vx-category-item" data-category="Video">Animated</li>
-                <li class="vx-category-item" data-category="Collectibles">Collectibles</li>
-                <li class="vx-category-item" data-category="Profile Pictures">Profile Pictures</li>
+                <!-- <li class="vx-category-item" data-category="Collectibles">Collectibles</li>
+                <li class="vx-category-item" data-category="Profile Pictures">Profile Pictures</li> -->
             </ul>
             
             <div class="vx-price-range">
@@ -694,7 +690,7 @@
         
         async function loadNFTs() {
             try {
-                const res = await fetch('/api/marketplace/nfts');
+                const res = await fetch('https://changes-sample.onrender.com/api/marketplace/nfts');
                 if (res.ok) {
                     allNFTs = await res.json();
                     filterAndRender();

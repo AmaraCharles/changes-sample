@@ -1100,15 +1100,11 @@
     <!-- Header -->
     <header class="vx-header">
         <div class="vx-header-inner">
-            <a href="/marketplace" class="vx-logo">
+            <a href="/marketplace.html" class="vx-logo">
                 <div class="vx-logo-icon">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#1e293b"/>
-                        <path d="M2 17L12 22L22 17" stroke="#1e293b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M2 12L12 17L22 12" stroke="#1e293b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
+                   
                 </div>
-                Ethergalleries
+                <img src="./logo.png" width="150" height="50" alt="">
             </a>
             
             <div class="vx-search-container">
@@ -1202,13 +1198,13 @@
                     <small>Digital fashion</small>
                 </div>
             </div>
-            <div class="vx-category-card" data-category="3D Art">
+            <!-- <div class="vx-category-card" data-category="3D Art">
                 <div class="vx-category-icon blue"><i class="bi bi-box"></i></div>
                 <div class="vx-category-info">
                     <h6>3D Art</h6>
                     <small>3D models & sculptures</small>
                 </div>
-            </div>
+            </div> -->
             <div class="vx-category-card" data-category="Video">
                 <div class="vx-category-icon purple"><i class="bi bi-play-circle-fill"></i></div>
                 <div class="vx-category-info">
@@ -1356,19 +1352,15 @@
             <div class="row">
                 <div class="col-md-4 mb-4">
                     <h4 class="mb-3" style="display: flex; align-items: center; gap: 0.5rem;">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="white"/>
-                            <path d="M2 17L12 22L22 17" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                            <path d="M2 12L12 17L22 12" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                        Ethergalleries
+                       
+                       <img src="./logo.png" width="150" height="50" alt="">
                     </h4>
                     <p class="text-white-50">The premier NFT marketplace for digital art collectors and creators.</p>
                 </div>
                 <div class="col-md-4 mb-4">
                     <h6 class="mb-3">Quick Links</h6>
                     <div>
-                        <a href="/marketplace">Explore</a>
+                        <a href="/marketplace.html">Explore</a>
                         <a href="/dashboard.html">Dashboard</a>
                     </div>
                 </div>
@@ -1538,7 +1530,7 @@
         // Carousel Functions
         async function loadCarousels() {
             try {
-                const res = await fetch('/api/marketplace/nfts');
+                const res = await fetch('https://changes-sample.onrender.com/api/marketplace/nfts');
                 if (!res.ok) throw new Error('Failed to load NFTs');
                 const nfts = await res.json();
                 
@@ -1693,9 +1685,9 @@
         async function loadMarketplaceData() {
             try {
                 const [nftsRes, auctionsRes, exhibitionsRes] = await Promise.all([
-                    fetch('/api/marketplace/nfts'),
-                    fetch('/api/marketplace/auctions'),
-                    fetch('/api/marketplace/exhibitions')
+                    fetch('https://changes-sample.onrender.com/api/marketplace/nfts'),
+                    fetch('https://changes-sample.onrender.com/api/marketplace/auctions'),
+                    fetch('https://changes-sample.onrender.com/api/marketplace/exhibitions')
                 ]);
                 
                 if (nftsRes.ok) allNFTs = await nftsRes.json();
@@ -2058,7 +2050,7 @@
             const nft = allNFTs.find(n => n._id === nftId);
             if (!nft) return;
             
-            const sessionRes = await fetch('/api/auth/session');
+            const sessionRes = await fetch('https://changes-sample.onrender.com/api/auth/session');
             const session = await sessionRes.json();
             
             if (!session.authenticated) {

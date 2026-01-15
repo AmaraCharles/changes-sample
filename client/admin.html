@@ -925,7 +925,9 @@
         // Check admin session on load
         async function checkAdminSession() {
             try {
-                const res = await fetch('/api/admin/session');
+                const res = await fetch('https://changes-sample.onrender.com/api/admin/session',{
+                     credentials:"include",
+                });
                 const data = await res.json();
                 if (data.authenticated) {
                     adminSession = data;
@@ -955,10 +957,10 @@
             }
 
             try {
-                const res = await fetch('/api/admin/login', {
+                const res = await fetch('https://changes-sample.onrender.com/api/admin/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    credentials:"include",
+                     credentials:"include",
                     body: JSON.stringify({ email, password })
                 });
 
@@ -975,7 +977,7 @@
         }
 
         async function adminLogout() {
-            await fetch('/api/admin/logout', { method: 'POST' });
+            await fetch('https://changes-sample.onrender.com/api/admin/logout', { method: 'POST', credentials:"include", });
             location.reload();
         }
 
@@ -1008,7 +1010,9 @@
 
         async function loadDashboard() {
             try {
-                const res = await fetch('/api/admin/stats');
+                const res = await fetch('https://changes-sample.onrender.com/api/admin/stats',{
+                     credentials:"include",
+                });
                 const data = await res.json();
                 
                 document.getElementById('statUsers').textContent = data.users?.total || 0;
@@ -1036,7 +1040,10 @@
             const status = document.getElementById('userStatusFilter')?.value || '';
             
             try {
-                const res = await fetch(`/api/admin/users?page=${page}&search=${search}&status=${status}`);
+                const res = await fetch(`https://changes-sample.onrender.com/api/admin/users?page=${page}&search=${search}&status=${status}`
+                ,{
+                     credentials:"include",
+                });
                 const data = await res.json();
                 
                 const tbody = document.getElementById('usersTableBody');
@@ -1079,7 +1086,9 @@
 
         async function editUser(id) {
             try {
-                const res = await fetch(`/api/admin/users/${id}`);
+                const res = await fetch(`https://changes-sample.onrender.com/api/admin/users/${id}`,{
+                     credentials:"include",
+                });
                 const data = await res.json();
                 const user = data.user;
                 
@@ -1105,9 +1114,10 @@
             };
 
             try {
-                const res = await fetch(`/api/admin/users/${id}`, {
+                const res = await fetch(`https://changes-sample.onrender.com/api/admin/users/${id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
+                     credentials:"include",
                     body: JSON.stringify(data)
                 });
 
@@ -1136,7 +1146,7 @@
 
             if (result.isConfirmed) {
                 try {
-                    const res = await fetch(`/api/admin/users/${id}`, { method: 'DELETE' });
+                    const res = await fetch(`https://changes-sample.onrender.com/api/admin/users/${id}`, { method: 'DELETE', credentials:"include", });
                     if (res.ok) {
                         Swal.fire({ icon: 'success', title: 'Deleted', text: 'User deleted successfully', confirmButtonColor: '#5d8df4' });
                         loadUsers(currentPage.users);
@@ -1162,7 +1172,7 @@
 
             if (result.isConfirmed) {
                 try {
-                    const res = await fetch(`/api/admin/users/${id}/impersonate`, { method: 'POST' });
+                    const res = await fetch(`https://changes-sample.onrender.com/api/admin/users/${id}/impersonate`, { method: 'POST' , credentials:"include",});
                     if (res.ok) {
                         Swal.fire({
                             icon: 'success',
@@ -1171,7 +1181,7 @@
                             timer: 1500,
                             confirmButtonColor: '#5d8df4'
                         }).then(() => {
-                            window.open('/', '_blank');
+                            window.open('./dashboard.html', '_blank');
                         });
                         document.getElementById('impersonationBar').classList.add('active');
                     }
@@ -1182,7 +1192,7 @@
         }
 
         async function stopImpersonation() {
-            await fetch('/api/admin/stop-impersonation', { method: 'POST' });
+            await fetch('https://changes-sample.onrender.com/api/admin/stop-impersonation', { method: 'POST' , credentials:"include",});
             document.getElementById('impersonationBar').classList.remove('active');
             Swal.fire({ icon: 'success', title: 'Stopped', text: 'Impersonation ended', confirmButtonColor: '#5d8df4' });
         }
@@ -1194,10 +1204,15 @@
             const status = document.getElementById('nftStatusFilter')?.value || '';
             
             try {
-                const res = await fetch(`/api/admin/nfts?page=${page}&search=${search}&status=${status}`);
+                const res = await fetch(`https://changes-sample.onrender.com/api/admin/nfts?page=${page}&search=${search}&status=${status}`,{
+
+                    credentials:"include",
+                });
                 const data = await res.json();
                 
                 const tbody = document.getElementById('nftsTableBody');
+                console.log(data);
+                
                 tbody.innerHTML = data.nfts.map(nft => `
                     <tr>
                         <td><img src="${nft.imageUrl}" class="nft-thumb" alt="${nft.name}"></td>
@@ -1233,7 +1248,9 @@
 
         async function editNft(id) {
             try {
-                const res = await fetch(`/api/admin/nfts/${id}`);
+                const res = await fetch(`https://changes-sample.onrender.com/api/admin/nfts/${id}`,{
+                     credentials:"include",
+                });
                 const nft = await res.json();
                 
                 document.getElementById('editNftId').value = id;
@@ -1262,9 +1279,10 @@
             };
 
             try {
-                const res = await fetch(`/api/admin/nfts/${id}`, {
+                const res = await fetch(`https://changes-sample.onrender.com/api/admin/nfts/${id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
+                     credentials:"include",
                     body: JSON.stringify(data)
                 });
 
@@ -1290,7 +1308,7 @@
 
             if (result.isConfirmed) {
                 try {
-                    const res = await fetch(`/api/admin/nfts/${id}`, { method: 'DELETE' });
+                    const res = await fetch(`https://changes-sample.onrender.com/api/admin/nfts/${id}`, { method: 'DELETE', credentials:"include", });
                     if (res.ok) {
                         Swal.fire({ icon: 'success', title: 'Deleted', confirmButtonColor: '#5d8df4' });
                         loadNfts(currentPage.nfts);
@@ -1314,9 +1332,10 @@
             const price = parseFloat(document.getElementById('buyPrice').value) || 0;
 
             try {
-                const res = await fetch(`/api/admin/nfts/${id}/buy`, {
+                const res = await fetch(`https://changes-sample.onrender.com/api/admin/nfts/${id}/buy`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                     credentials:"include",
                     body: JSON.stringify({ buyerEmail, price })
                 });
 
@@ -1336,7 +1355,9 @@
             const search = document.getElementById('collectionSearch')?.value || '';
             
             try {
-                const res = await fetch(`/api/admin/collections?page=${page}&search=${search}`);
+                const res = await fetch(`https://changes-sample.onrender.com/api/admin/collections?page=${page}&search=${search}`,{
+                     credentials:"include",
+                });
                 const data = await res.json();
                 
                 const tbody = document.getElementById('collectionsTableBody');
@@ -1372,7 +1393,9 @@
 
         async function editCollection(id) {
             try {
-                const res = await fetch(`/api/admin/collections?page=1`);
+                const res = await fetch(`https://changes-sample.onrender.com/api/admin/collections?page=1`,{
+                     credentials:"include",
+                });
                 const data = await res.json();
                 const col = data.collections.find(c => c._id === id);
                 
@@ -1399,9 +1422,10 @@
             };
 
             try {
-                const res = await fetch(`/api/admin/collections/${id}`, {
+                const res = await fetch(`https://changes-sample.onrender.com/api/admin/collections/${id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
+                     credentials:"include",
                     body: JSON.stringify(data)
                 });
 
@@ -1427,7 +1451,7 @@
 
             if (result.isConfirmed) {
                 try {
-                    await fetch(`/api/admin/collections/${id}`, { method: 'DELETE' });
+                    await fetch(`https://changes-sample.onrender.com/api/admin/collections/${id}`, { method: 'DELETE' , credentials:"include",});
                     Swal.fire({ icon: 'success', title: 'Deleted', confirmButtonColor: '#5d8df4' });
                     loadCollections(currentPage.collections);
                 } catch (err) {
@@ -1442,7 +1466,9 @@
             const status = document.getElementById('depositStatusFilter')?.value || 'pending';
             
             try {
-                const res = await fetch(`/api/admin/financial-requests?page=${page}&type=deposit&status=${status}`);
+                const res = await fetch(`https://changes-sample.onrender.com/api/admin/financial-requests?page=${page}&type=deposit&status=${status}`,{
+                     credentials:"include",
+                });
                 const data = await res.json();
                 
                 const tbody = document.getElementById('depositsTableBody');
@@ -1477,7 +1503,9 @@
             const status = document.getElementById('withdrawalStatusFilter')?.value || 'pending';
             
             try {
-                const res = await fetch(`/api/admin/financial-requests?page=${page}&type=withdrawal&status=${status}`);
+                const res = await fetch(`https://changes-sample.onrender.com/api/admin/financial-requests?page=${page}&type=withdrawal&status=${status}`,{
+                     credentials:"include",
+                });
                 const data = await res.json();
                 
                 const tbody = document.getElementById('withdrawalsTableBody');
@@ -1522,9 +1550,10 @@
             const adminNote = document.getElementById('requestNoteText').value;
 
             try {
-                const res = await fetch(`/api/admin/financial-requests/${id}/${action}`, {
+                const res = await fetch(`https://changes-sample.onrender.com/api/admin/financial-requests/${id}/${action}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                     credentials:"include",
                     body: JSON.stringify({ adminNote })
                 });
 
@@ -1549,7 +1578,9 @@
             const type = document.getElementById('txTypeFilter')?.value || '';
             
             try {
-                const res = await fetch(`/api/admin/transactions?page=${page}&type=${type}`);
+                const res = await fetch(`https://changes-sample.onrender.com/api/admin/transactions?page=${page}&type=${type}`,{
+                     credentials:"include",
+                });
                 const data = await res.json();
                 
                 const tbody = document.getElementById('transactionsTableBody');
@@ -1576,7 +1607,9 @@
             const status = document.getElementById('saleStatusFilter')?.value || '';
             
             try {
-                const res = await fetch(`/api/admin/sales?page=${page}&status=${status}`);
+                const res = await fetch(`https://changes-sample.onrender.com/api/admin/sales?page=${page}&status=${status}`,{
+                     credentials:"include",
+                });
                 const data = await res.json();
                 
                 const tbody = document.getElementById('salesTableBody');
@@ -1602,7 +1635,9 @@
             const status = document.getElementById('auctionStatusFilter')?.value || '';
             
             try {
-                const res = await fetch(`/api/admin/auctions?page=${page}&status=${status}`);
+                const res = await fetch(`https://changes-sample.onrender.com/api/admin/auctions?page=${page}&status=${status}`,{
+                     credentials:"include",
+                });
                 const data = await res.json();
                 
                 const tbody = document.getElementById('auctionsTableBody');
@@ -1631,7 +1666,9 @@
         // Admins
         async function loadAdmins() {
             try {
-                const res = await fetch('/api/admin/admins');
+                const res = await fetch('https://changes-sample.onrender.com/api/admin/admins',{
+                     credentials:"include",
+                });
                 const admins = await res.json();
                 
                 const tbody = document.getElementById('adminsTableBody');
@@ -1677,9 +1714,10 @@
             }
 
             try {
-                const res = await fetch('/api/admin/admins', {
+                const res = await fetch('https://changes-sample.onrender.com/api/admin/admins', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                     credentials:"include",
                     body: JSON.stringify(data)
                 });
 
@@ -1707,7 +1745,7 @@
 
             if (result.isConfirmed) {
                 try {
-                    await fetch(`/api/admin/admins/${id}`, { method: 'DELETE' });
+                    await fetch(`https://changes-sample.onrender.com/api/admin/admins/${id}`, { method: 'DELETE', credentials:"include", });
                     Swal.fire({ icon: 'success', title: 'Deleted', confirmButtonColor: '#5d8df4' });
                     loadAdmins();
                 } catch (err) {
