@@ -932,7 +932,8 @@ app.get('/api/nfts/user', async (req: Request, res: Response) => {
      
     try {
        const userEm = await getUser(req)
-    
+     const userId = await getUserId(req); // ✅ DEFINE IT
+
       const { name, description, collectionId, collection, price, currency, royalty, attributes, imageUrl: providedImageUrl, mediaType, category, rarity,tags } = req.body;
       const MINTING_FEE = 0.2; // Hard-coded minting fee - never trust client input
       
