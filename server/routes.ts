@@ -141,12 +141,12 @@ export async function registerRoutes(
   // Get user balance (both ETH and WETH)
   app.get('/api/user/balance', async (req: Request, res: Response) => {
     try {
-      const userId = req.session.userId;
+      const userId = await getUser(req)
     
       if (!userId) {
         return res.status(401).json({ message: 'Not authenticated' });
       }
-      const dbUser = await User.findById(userId);
+      const dbUser = await User.findOne({email:userId});
       if (!dbUser) {
         return res.status(404).json({ message: 'User not found' });
       }
