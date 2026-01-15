@@ -1163,50 +1163,50 @@ app.get('/api/sales', async (req: Request, res: Response) => {
 });
 
 
-  // app.put('/api/sales/:id/buy', async (req: Request, res: Response) => {
+  app.put('/api/sales/:id/buy', async (req: Request, res: Response) => {
 
-  //     const userEm = await getUser(req)
+      const userEm = await getUser(req)
     
-  //   try {
-  //     const sale = await NFT.findById(req.params.id).populate('nft');
+    try {
+      const sale = await NFT.findById(req.params.id).populate('nft');
 
-  //     if (!sale) {
-  //       return res.status(404).json({ message: 'Sale not found' });
-  //     }
+      if (!sale) {
+        return res.status(404).json({ message: 'Sale not found' });
+      }
 
-  //     if (sale.status !== 'listed') {
-  //       return res.status(400).json({ message: 'Sale is not active' });
-  //     }
+      if (sale.status !== 'listed') {
+        return res.status(400).json({ message: 'Sale is not active' });
+      }
 
-  //     sale.status = 'sold';
-  //     sale.buyer = 'buyer';
-  //     sale.soldDate = new Date();
-  //     await sale.save();
+      sale.status = 'sold';
+      sale.buyer = 'buyer';
+      sale.soldDate = new Date();
+      await sale.save();
 
-  //     const nft = await NFT.findById(sale.nft);
-  //     if (nft) {
-  //       nft.status = 'sold';
-  //       nft.owner = 'buyer';
-  //       await nft.save();
-  //     }
+      const nft = await NFT.findById(sale.nft);
+      if (nft) {
+        nft.status = 'sold';
+        nft.owner = 'buyer';
+        await nft.save();
+      }
 
-  //     // Create transaction
-  //     await new Transaction({
-  //       type: 'purchase',
-  //       nft: sale.nft._id,
-  //       from: 'buyer',
-  //       to: 'user',
-  //       owner:userEm,
-  //       amount: sale.price,
-  //       currency: sale.currency,
-  //       description: `NFT sold: ${(sale.nft as any).name}`,
-  //     }).save();
+      // Create transaction
+      await new Transaction({
+        type: 'purchase',
+        nft: sale.nft._id,
+        from: 'buyer',
+        to: 'user',
+        owner:userEm,
+        amount: sale.price,
+        currency: sale.currency,
+        description: `NFT sold: ${(sale.nft as any).name}`,
+      }).save();
 
-  //     res.json(sale);
-  //   } catch (error) {
-  //     res.status(500).json({ message: 'Failed to complete sale' });
-  //   }
-  // });
+      res.json(sale);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to complete sale' });
+    }
+  });
 
   // ===== AUCTIONS =====
   app.get('/api/auctions', async (req: Request, res: Response) => {
