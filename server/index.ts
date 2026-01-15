@@ -16,28 +16,37 @@ declare module "http" {
   }
 }
 
+const allowedOrigins = [
+  "http://localhost:5000",
+  "https://clentmode.vercel.app",
+  "https://www.ethergalleries.com",
+  "https://ethergalleries.com",
+];
+
 app.use(cors({
-  origin: [
-   
-    "http://localhost:5000",
-    "https://clentmode.vercel.app",
-    "https://www.ethergalleries.com",
-    "https://ethergalleries.com"
-  ],
-  credentials: true,
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true); // mobile apps sometimes send no origin
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true, // ✅ allow cookies
 }));
+
+// 2. Required if behind Render / proxy
 app.set("trust proxy", 1);
 
+// 3. Session config
 app.use(session({
   name: "ethergalleries.sid",
-  secret: process.env.SESSION_SECRET || 'Ethergalleries-dev-secret-key-2024',
+  secret: process.env.SESSION_SECRET || "dev-secret-2026",
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: true,          // 🔥 ALWAYS TRUE on Render
     httpOnly: true,
-    sameSite: "none",      // 🔥 REQUIRED
-    maxAge: 7 * 24 * 60 * 60 * 1000
+    secure: true,      // ✅ must be true for cross-site cookies
+    sameSite: "none",  // ✅ required for cross-site requests
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    path: "/"          // important
   }
 }));
 
