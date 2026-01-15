@@ -495,8 +495,9 @@ app.post('/api/auth/login', async (req: Request, res: Response) => {
 
   // Change Password
   app.post('/api/auth/change-password', async (req: Request, res: Response) => {
-    try {
-      if (!req.session.userId) {
+     try {
+        const getUser=await getUserId(req)
+      if (!getUser) {
         return res.status(401).json({ message: 'Please login first' });
       }
 
@@ -1907,11 +1908,13 @@ app.get('/api/sales', async (req: Request, res: Response) => {
   
   // Submit deposit request
   app.post('/api/deposit', async (req: Request, res: Response) => {
-    try {
-      if (!req.session.userId) {
+     try {
+        const getUserNow=await getUserId(req)
+      if (!getUserNow) {
         return res.status(401).json({ message: 'Please login first' });
       }
 
+      
       const { amount, transactionHash, currency = 'ETH' } = req.body;
 
       if (!amount || amount <= 0) {
@@ -1919,7 +1922,7 @@ app.get('/api/sales', async (req: Request, res: Response) => {
       }
 
       const request = await FinancialRequest.create({
-        userId: req.session.userId,
+        userId:getUserNow,
         type: 'deposit',
         amount,
         currency,
@@ -1939,7 +1942,9 @@ app.get('/api/sales', async (req: Request, res: Response) => {
     try {
 
       const userEm= await getUser(req)
-      if (!req.session.userId) {
+
+      const getUserNow=await getUserId(req)
+      if (!getUserNow) {
         return res.status(401).json({ message: 'Please login first' });
       }
 
@@ -1963,7 +1968,7 @@ app.get('/api/sales', async (req: Request, res: Response) => {
       }
 
       const request = await FinancialRequest.create({
-        userId: req.session.userId,
+        userId:getUserNow,
         type: 'withdrawal',
         amount,
         currency,
@@ -1981,8 +1986,9 @@ app.get('/api/sales', async (req: Request, res: Response) => {
 
   // Get user's financial requests
   app.get('/api/my-requests', async (req: Request, res: Response) => {
-    try {
-      if (!req.session.userId) {
+     try {
+        const getUser=await getUserId(req)
+      if (!getUser) {
         return res.status(401).json({ message: 'Please login first' });
       }
 
