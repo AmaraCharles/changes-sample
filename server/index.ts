@@ -16,37 +16,28 @@ declare module "http" {
   }
 }
 
-const allowedOrigins = [
-  "http://localhost:5000",
-  "https://clentmode.vercel.app",
-  "https://www.ethergalleries.com",
-  "https://ethergalleries.com",
-];
-
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // mobile apps sometimes send no origin
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    callback(new Error("Not allowed by CORS"));
-  },
-  credentials: true, // ✅ allow cookies
+  origin: [
+   
+    "http://localhost:5000",
+    "https://clentmode.vercel.app",
+    "https://www.ethergalleries.com",
+    "https://ethergalleries.com"
+  ],
+  credentials: true,
 }));
-
-// 2. Required if behind Render / proxy
 app.set("trust proxy", 1);
 
-// 3. Session config
 app.use(session({
   name: "ethergalleries.sid",
-  secret: process.env.SESSION_SECRET || "dev-secret-2026",
+  secret: process.env.SESSION_SECRET || 'Ethergalleries-dev-secret-key-2024',
   resave: false,
   saveUninitialized: false,
   cookie: {
+    secure: true,          // 🔥 ALWAYS TRUE on Render
     httpOnly: true,
-    secure: true,      // ✅ must be true for cross-site cookies
-    sameSite: "none",  // ✅ required for cross-site requests
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    path: "/"          // important
+    sameSite: "none",      // 🔥 REQUIRED
+    maxAge: 7 * 24 * 60 * 60 * 1000
   }
 }));
 
@@ -150,7 +141,7 @@ app.use((req, res, next) => {
    // For any route that isn't /api/*, serve index.html
 app.get('*', (req, res) => {
   if (!req.path.startsWith('/api')) {
-    res.sendFile(path.join(__dirname, '../client/index.html'));
+    res.sendFile(path.join(__dirname, '../client/public/index.html'));
   }
 });
 })();
