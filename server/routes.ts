@@ -110,7 +110,9 @@ export async function registerRoutes(
  async function getUser(req: Request): Promise<string> {
   try {
     // 1️⃣ Read token from Authorization header
-    const authHeader = req.headers['Authorization'];
+    const authHeader = req.headers['authorization'];
+    console.log(req.headers);
+    
     if (!authHeader) throw new Error("No token provided");
 
     const token = authHeader.split(' ')[1]; // "Bearer <token>"
