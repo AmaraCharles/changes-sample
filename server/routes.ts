@@ -95,17 +95,33 @@ export async function registerRoutes(
   }
 
   // Check session
-  app.get('/api/auth/session', (req: Request, res: Response) => {
-    if (req.session.userId) {
-      res.json({ 
-        authenticated: true, 
-        userId: req.session.userId,
-        email: req.session.email 
-      });
-    } else {
-      res.json({ authenticated: false });
+  app.get("/api/auth/session", async (req: Request, res: Response) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.json({ authenticated: false });
     }
-  });
+
+    const token = authHeader.split(" ")[1];
+    if (!token) {
+      return res.json({ authenticated: false });
+    }
+
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || "super-secret-key"
+    ) as { userId: string; email?: string };
+
+    return res.json({
+      authenticated: true,
+      userId: decoded.userId,
+      email: decoded.email
+    });
+
+  } catch (err) {
+    return res.json({ authenticated: false });
+  }
+});
 
  async function getUser(req: Request): Promise<string> {
   try {
@@ -1958,7 +1974,7 @@ app.get('/api/sales', async (req: Request, res: Response) => {
         return res.status(400).json({ message: 'Wallet address is required' });
       }
 
-      const user = await User.findById(req.session.userId);
+      const user = await User.findById(getUserNow);
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
