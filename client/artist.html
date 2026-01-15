@@ -433,7 +433,7 @@
         
         async function loadArtistProfile() {
             try {
-                const res = await fetch('https://changes-sample.onrender.com/api/marketplace/nfts');
+                const res = await fetch('/api/marketplace/nfts');
                 if (!res.ok) throw new Error('Failed to load');
                 
                 const allNFTs = await res.json();

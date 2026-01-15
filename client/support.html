@@ -694,7 +694,7 @@
             const data = Object.fromEntries(formData.entries());
 
             try {
-                const res = await fetch('https://changes-sample.onrender.com/api/support', {
+                const res = await fetch('/api/support', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)

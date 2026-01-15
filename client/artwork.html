@@ -507,7 +507,7 @@
         
         async function loadArtwork(nftId) {
             try {
-                const res = await fetch('https://changes-sample.onrender.com/api/marketplace/nfts');
+                const res = await fetch('/api/marketplace/nfts');
                 if (!res.ok) throw new Error('Failed to load');
                 
                 const allNFTs = await res.json();
@@ -725,7 +725,7 @@
         }
         
         async function buyNFT() {
-            const sessionRes = await fetch('https://changes-sample.onrender.com/api/auth/session');
+            const sessionRes = await fetch('/api/auth/session');
             const session = await sessionRes.json();
             
             if (!session.authenticated) {
