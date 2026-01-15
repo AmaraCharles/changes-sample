@@ -137,6 +137,35 @@ export async function registerRoutes(
   }
 }
 
+async function getUserId(req: Request): Promise<string> {
+  try {
+    // 1️⃣ Read token from Authorization header
+    const authHeader = req.headers['authorization'];
+    console.log(req.headers);
+    
+    if (!authHeader) throw new Error("No token provided");
+
+    const token = authHeader.split(' ')[1]; // "Bearer <token>"
+    if (!token) throw new Error("Invalid token");
+
+    // 2️⃣ Verify JWT
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'super-secret-key') as any;
+    const userId = decoded.userId;
+
+    if (!userId) throw new Error("Invalid token payload");
+
+    // 3️⃣ Fetch user from database
+    const user = await User.findById(userId);
+    if (!user) throw new Error("User not found");
+
+    // 4️⃣ Return ID
+    return user._id;
+
+  } catch (err) {
+    console.error("getUser error:", err);
+    throw new Error("Unauthorized");
+  }
+}
 
   // Get user balance (both ETH and WETH)
   app.get('/api/user/balance', async (req: Request, res: Response) => {
@@ -162,7 +191,7 @@ export async function registerRoutes(
   // Transfer WETH to ETH (with 9.5% fee)
   app.post('/api/user/convert-weth', async (req: Request, res: Response) => {
     try {
-      const userId = req.session.userId;
+      const userId = await getUserId(req)
       const userEm=await getUser(req)
       if (!userId) {
         return res.status(401).json({ message: 'Please login first' });
@@ -230,7 +259,7 @@ export async function registerRoutes(
   // Get user deposit history
   app.get('/api/user/deposits', async (req: Request, res: Response) => {
     try {
-      const userId = req.session.userId;
+      const userId = await getUserId(req)
       if (!userId) {
         return res.status(401).json({ message: 'Please login first' });
       }
@@ -250,7 +279,7 @@ export async function registerRoutes(
   // Get user withdrawal history
   app.get('/api/user/withdrawals', async (req: Request, res: Response) => {
     try {
-      const userId = req.session.userId;
+      const userId = await getUserId(req)
       if (!userId) {
         return res.status(401).json({ message: 'Please login first' });
       }
@@ -915,17 +944,18 @@ app.get('/api/nfts/user', async (req: Request, res: Response) => {
 
   app.post('/api/nfts', upload.single('image'), async (req: Request, res: Response) => {
 
-      const userEm = await getUser(req)
-    
+     
     try {
+       const userEm = await getUser(req)
+    
       const { name, description, collectionId, collection, price, currency, royalty, attributes, imageUrl: providedImageUrl, mediaType, category, rarity,tags } = req.body;
       const MINTING_FEE = 0.2; // Hard-coded minting fee - never trust client input
       
       // Get authenticated user from session
-      const userId = req.session.userId;
-      if (!userId) {
-        return res.status(401).json({ message: 'Authentication required' });
-      }
+      // const userId = await getUserId(req)
+      // if (!userId) {
+      //   return res.status(401).json({ message: 'Authentication required' });
+      // }
 
       // Check user balance for minting fee
       const dbUser = await User.findById(userId);
@@ -1087,14 +1117,15 @@ app.get('/api/sales', async (req: Request, res: Response) => {
   app.post('/api/sales', async (req: Request, res: Response) => {
     try {
       const { nftId, price, currency } = req.body;
-
+ const userEm = await getUser(req)
+    
       // Get authenticated user from session
-      const userId = req.session.userId;
-      if (!userId) {
-        return res.status(401).json({ message: 'Authentication required' });
-      }
+      // const userId = await getUserId(req)
+      // if (!userId) {
+      //   return res.status(401).json({ message: 'Authentication required' });
+      // }
 
-      const dbUser = await User.findById(userId);
+      const dbUser = await User.findOne({email:userEm});
       if (!dbUser) {
         return res.status(404).json({ message: 'User not found' });
       }
