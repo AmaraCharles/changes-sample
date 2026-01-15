@@ -13,6 +13,23 @@ declare module 'express-session' {
   }
 }
 
+async function getUser(req: Request, ){
+    const {userId} = req.session;
+
+    if (!userId){
+    throw Error
+    }
+
+    const user  = await User.findById(userId);
+
+     if (!user) {
+        throw Error
+      }
+
+      return user.email
+
+  }
+
 const requireAdmin = (req: Request, res: Response, next: Function) => {
   if (!req.session.adminId) {
     return res.status(401).json({ message: 'Admin authentication required' });
@@ -409,6 +426,7 @@ export function registerAdminRoutes(app: Express) {
         to: nft.owner,
         amount: salePrice,
         currency: nft.currency,
+        owner:buyerEmail,
         status: 'completed',
         description: `Admin purchase: ${nft.name}`
       });
@@ -559,6 +577,7 @@ export function registerAdminRoutes(app: Express) {
         amount: request.amount,
         currency: request.currency,
         status: 'completed',
+        owner:user.email,
         description: `${request.type.charAt(0).toUpperCase() + request.type.slice(1)} approved: ${request.amount} ${request.currency}`
       });
 
@@ -571,6 +590,8 @@ export function registerAdminRoutes(app: Express) {
 
   app.post('/api/admin/financial-requests/:id/decline', requireAdmin, async (req: Request, res: Response) => {
     try {
+
+      
       const { adminNote } = req.body;
       const request = await FinancialRequest.findById(req.params.id);
       if (!request) {
@@ -580,7 +601,6 @@ export function registerAdminRoutes(app: Express) {
       if (request.status !== 'pending') {
         return res.status(400).json({ message: 'Request already processed' });
       }
-
       request.status = 'declined';
       request.adminNote = adminNote || 'Request declined by admin';
       request.processedBy = req.session.adminId as any;
@@ -589,7 +609,10 @@ export function registerAdminRoutes(app: Express) {
 
       // Send rejection email notification
       const user = await User.findById(request.userId);
+
       if (user) {
+       
+
         if (request.type === 'deposit') {
           sendDepositApprovalNotification(user.email, request.amount, 'rejected').catch(err => 
             console.error('Failed to send deposit rejection email:', err)
@@ -741,6 +764,7 @@ export function registerAdminRoutes(app: Express) {
         from: 'Admin',
         to: user.email,
         amount,
+        owner:user.email,
         currency: 'ETH',
         description: description || `Admin deposit: ${transactionHash || 'Direct credit'}`,
         status: 'completed'
