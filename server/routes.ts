@@ -4,6 +4,8 @@ import path from "path";
 import fs from "fs";
 import { connectMongoDB } from "./mongodb";
 import session from "express-session";
+import jwt from "jsonwebtoken";
+import {NextFunction } from "express";
  import  UsersDatabase  from "./models/User";
 // ✅ FIX: CommonJS-safe directory resolution
 const __dirname = process.cwd();
@@ -105,22 +107,34 @@ export async function registerRoutes(
     }
   });
 
-  async function getUser(req: Request, ){
-    const {userId} = req.session;
+ async function getUser(req: Request): Promise<string> {
+  try {
+    // 1️⃣ Read token from Authorization header
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) throw new Error("No token provided");
 
-    if (!userId){
-    throw Error
-    }
+    const token = authHeader.split(' ')[1]; // "Bearer <token>"
+    if (!token) throw new Error("Invalid token");
 
-    const user  = await User.findById(userId);
+    // 2️⃣ Verify JWT
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'super-secret-key') as any;
+    const userId = decoded.userId;
 
-     if (!user) {
-        throw Error
-      }
+    if (!userId) throw new Error("Invalid token payload");
 
-      return user.email
+    // 3️⃣ Fetch user from database
+    const user = await User.findById(userId);
+    if (!user) throw new Error("User not found");
 
+    // 4️⃣ Return email
+    return user.email;
+
+  } catch (err) {
+    console.error("getUser error:", err);
+    throw new Error("Unauthorized");
   }
+}
+
 
   // Get user balance (both ETH and WETH)
   app.get('/api/user/balance', async (req: Request, res: Response) => {
@@ -398,26 +412,30 @@ export async function registerRoutes(
     }
   });
 
-  // Login
-  app.post('/api/auth/login', async (req: Request, res: Response) => {
+// Login route using JWT
+app.post('/api/auth/login', async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
+    // 1️⃣ Find user
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
+    // 2️⃣ Verify password
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
+    // 3️⃣ Check email verification
     if (!user.verified) {
       const verificationCode = generateVerificationCode();
       user.verificationCode = verificationCode;
-      user.verificationExpiry = new Date(Date.now() + 10 * 60 * 1000);
+      user.verificationExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 min
       await user.save();
+
       return res.status(403).json({
         message: 'Please verify your email first',
         needsVerification: true,
@@ -425,24 +443,19 @@ export async function registerRoutes(
       });
     }
 
-    // ✅ Set session
-    req.session.userId = user._id.toString();
-    req.session.email = user.email;
+    // 4️⃣ Generate JWT token
+    const token = jwt.sign(
+      { userId: user._id.toString(), email: user.email },
+      process.env.JWT_SECRET || 'super-secret-key',
+      { expiresIn: '7d' } // token valid for 7 days
+    );
 
-    // ✅ Save session and confirm
-    req.session.save((err) => {
-      if (err) {
-        console.error('Session save error:', err);
-        return res.status(500).json({ message: 'Login succeeded but session failed' });
-      }
-
-      // Session successfully saved
-      res.json({
-        message: 'Login successful, session stored!',
-        email: user.email,
-        username: user.username,
-        sessionStored: true // frontend can use this
-      });
+    // 5️⃣ Return token and user info
+    res.json({
+      message: 'Login successful',
+      token,              // 🔑 Frontend will use this
+      email: user.email,
+      username: user.username
     });
 
   } catch (error) {

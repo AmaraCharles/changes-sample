@@ -127,16 +127,18 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || "5000", 10);
-  httpServer.listen(
-    {
-      port,
-      host: "0.0.0.0",
-      reusePort: true,
-    },
-    () => {
-      log(`serving on port ${port}`);
-    },
-  );
+  if (!process.env.VERCEL) {
+    httpServer.listen(
+      {
+        port,
+        host: "0.0.0.0",
+        reusePort: true
+      },
+      () => {
+        log(`serving on port ${port}`);
+      },
+    );
+  }
 
    // For any route that isn't /api/*, serve index.html
 app.get('*', (req, res) => {
@@ -314,3 +316,7 @@ app.get('*', (req, res) => {
 //   }
 // });
 // })();
+
+export default (req: Request, res: Response) => {
+  app(req, res);
+};

@@ -2,6 +2,7 @@ import type { Express, Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import { Collection, NFT, Sale, Auction, Exhibition, Transaction, Admin, FinancialRequest } from "./models";
 import { sendDepositApprovalNotification, sendWithdrawalApprovalNotification } from "./email";
+import { Request, Response, NextFunction } from "express";
 import User from "./models/User";
 
 declare module 'express-session' {
@@ -30,11 +31,35 @@ async function getUser(req: Request, ){
 
   }
 
-const requireAdmin = (req: Request, res: Response, next: Function) => {
-  if (!req.session.adminId) {
-    return res.status(401).json({ message: 'Admin authentication required' });
+export const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // 1️⃣ Read token from Authorization header
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) {
+      return res.status(401).json({ message: 'Admin authentication required: No token' });
+    }
+
+    const token = authHeader.split(' ')[1]; // "Bearer <token>"
+    if (!token) {
+      return res.status(401).json({ message: 'Admin authentication required: Invalid token' });
+    }
+
+    // 2️⃣ Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'super-secret-key') as any;
+
+    // 3️⃣ Check if user is admin
+    if (!decoded.isAdmin) {
+      return res.status(403).json({ message: 'Admin authentication required: Not an admin' });
+    }
+
+    // 4️⃣ Attach admin info to request for later use
+    req.user = decoded;
+
+    next();
+  } catch (err) {
+    console.error('Admin auth error:', err);
+    return res.status(401).json({ message: 'Admin authentication required: Invalid or expired token' });
   }
-  next();
 };
 
 const requireSuperAdmin = (req: Request, res: Response, next: Function) => {
