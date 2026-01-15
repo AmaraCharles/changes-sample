@@ -159,7 +159,7 @@ async function getUserId(req: Request): Promise<string> {
     if (!user) throw new Error("User not found");
 
     // 4️⃣ Return ID
-    return user._id;
+    return userId;
 
   } catch (err) {
     console.error("getUser error:", err);
