@@ -16,15 +16,21 @@ declare module "http" {
   }
 }
 
+const allowedOrigins = [
+  "https://www.ethergalleries.com",
+  "https://ethergalleries.com",
+  "https://clentmode.vercel.app",
+  "http://localhost:5000"
+];
+
 app.use(cors({
-  origin: [
-   
-    "http://localhost:5000",
-    "https://clentmode.vercel.app",
-    "https://www.ethergalleries.com",
-    "https://ethergalleries.com"
-  ],
-  credentials: true,
+  origin: function(origin, callback) {
+    // allow requests with no origin like mobile apps or curl
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error("CORS not allowed"));
+  },
+  credentials: true, // optional, not needed for JWT unless using cookies
 }));
 app.set("trust proxy", 1);
 
