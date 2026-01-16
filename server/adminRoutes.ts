@@ -740,25 +740,40 @@ export function registerAdminRoutes(app: Express) {
   });
 
   // ===== SALES & AUCTIONS MANAGEMENT =====
-  app.get('/api/admin/sales', requireAdmin, async (req: Request, res: Response) => {
-    try {
-      const { page = 1, limit = 20, status = '' } = req.query;
-      const skip = (Number(page) - 1) * Number(limit);
+  app.get('/api/admin/nfts', requireAdmin, async (req: Request, res: Response) => {
+  try {
+    // 1️⃣ Pagination params
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
 
-      let query: any = {};
-      if (status) query.status = status;
+    // 2️⃣ Filter by status if provided
+    const status = req.query.status as string;
+    const query: any = {};
+    if (status) query.status = status;
 
-      const [sales, total] = await Promise.all([
-        Sale.find(query).populate('nftId').skip(skip).limit(Number(limit)).sort({ createdAt: -1 }),
-        Sale.countDocuments(query)
-      ]);
+    // 3️⃣ Fetch NFTs and total count in parallel
+    const [nfts, total] = await Promise.all([
+      NFT.find(query)
+         .skip(skip)
+         .limit(limit)
+         .sort({ createdAt: -1 }),
+      NFT.countDocuments(query)
+    ]);
 
-      res.json({ sales, total, pages: Math.ceil(total / Number(limit)) });
-    } catch (error) {
-      console.error('Fetch sales error:', error);
-      res.status(500).json({ message: 'Failed to fetch sales' });
-    }
-  });
+    // 4️⃣ Respond with pagination info
+    res.json({
+      nfts,
+      total,
+      pages: Math.ceil(total / limit),
+      currentPage: page
+    });
+  } catch (error) {
+    console.error('Fetch NFTs error:', error);
+    res.status(500).json({ message: 'Failed to fetch NFTs' });
+  }
+});
+
 
   app.get('/api/admin/auctions', requireAdmin, async (req: Request, res: Response) => {
     try {
