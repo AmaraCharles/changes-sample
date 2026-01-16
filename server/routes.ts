@@ -1212,50 +1212,103 @@ app.get('/api/sales', async (req: Request, res: Response) => {
 });
 
 
-  app.put('/api/sales/:id/buy', async (req: Request, res: Response) => {
+  // app.put('/api/sales/:id/buy', async (req: Request, res: Response) => {
 
-      const userEm = await getUser(req)
+  //     const userEm = await getUser(req)
     
-    try {
-      const sale = await NFT.findById(req.params.id).populate('nft');
+  //   try {
+  //     const sale = await NFT.findById(req.params.id)
 
-      if (!sale) {
-        return res.status(404).json({ message: 'Sale not found' });
-      }
+  //     if (!sale) {
+  //       return res.status(404).json({ message: 'Sale not found' });
+  //     }
 
-      if (sale.status !== 'listed') {
-        return res.status(400).json({ message: 'Sale is not active' });
-      }
+  //     if (sale.status !== 'listed') {
+  //       return res.status(400).json({ message: 'Sale is not active' });
+  //     }
 
-      sale.status = 'sold';
-      sale.buyer = 'buyer';
-      sale.soldDate = new Date();
-      await sale.save();
+  //     sale.status = 'sold';
+  //     sale.soldDate = new Date();
+  //     await sale.save();
 
-      const nft = await NFT.findById(sale.nft);
-      if (nft) {
-        nft.status = 'sold';
-        nft.owner = 'buyer';
-        await nft.save();
-      }
+  //     const nft =sale;
+  //     if (nft) {
+  //       nft.status = 'sold';
+  //       nft.owner = 'buyer';
+  //       await nft.save();
+  //     }
 
-      // Create transaction
-      await new Transaction({
-        type: 'purchase',
-        nft: sale.nft._id,
-        from: 'buyer',
-        to: 'user',
-        owner:userEm,
-        amount: sale.price,
-        currency: sale.currency,
-        description: `NFT sold: ${(sale.nft as any).name}`,
-      }).save();
+  //     // Create transaction
+  //     await new Transaction({
+  //       type: 'purchase',
+  //       nft: sale.nft._id,
+  //       from: 'buyer',
+  //       to: 'user',
+  //       owner:userEm,
+  //       amount: sale.price,
+  //       currency: sale.currency,
+  //       description: `NFT sold: ${(sale.nft as any).name}`,
+  //     }).save();
 
-      res.json(sale);
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to complete sale' });
+  //     res.json(sale);
+  //   } catch (error) {
+  //     res.status(500).json({ message: 'Failed to complete sale' });
+  //   }
+  // });
+
+
+  app.put('/api/sales/:id/buy', async (req: Request, res: Response) => {
+  try {
+    // 🔐 Get buyer details from JWT
+    const buyerEmail = await getUser(req);
+    const buyerId = await getUserId(req);
+
+    // 🎨 Find NFT directly
+    const nft = await NFT.findById(req.params.id);
+    if (!nft) {
+      return res.status(404).json({ message: 'NFT not found' });
     }
-  });
+
+    // 🚫 Must be listed
+    if (nft.status !== 'listed') {
+      return res.status(400).json({ message: 'NFT is not available for sale' });
+    }
+
+    // ❌ Optional safety: prevent buying own NFT
+    if (nft.owner?.toString() === buyerId) {
+      return res.status(400).json({ message: 'You cannot buy your own NFT' });
+    }
+
+    // ✅ Mark NFT as sold
+    nft.status = 'sold';
+    nft.soldDate = new Date();
+    nft.owner = buyerEmail;
+    await nft.save();
+
+    // 💰 Create transaction record
+    await new Transaction({
+      type: 'purchase',
+      nft: nft._id,
+      from: 'marketplace',
+      to: buyerId,
+      owner: buyerEmail,
+      amount: nft.price,
+      currency: nft.currency,
+      description: `NFT purchased by ${buyerEmail}`,
+    }).save();
+
+    res.json({
+      message: 'NFT purchased successfully',
+      nft
+    });
+
+  } catch (error) {
+    console.error('Buy NFT error:', error);
+    res.status(401).json({ message: 'Unauthorized or purchase failed' });
+  }
+});
+
+
 
   // ===== AUCTIONS =====
   app.get('/api/auctions', async (req: Request, res: Response) => {

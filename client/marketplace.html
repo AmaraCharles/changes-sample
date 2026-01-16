@@ -2047,69 +2047,60 @@
         }
         
         async function buyNFT(nftId) {
-            const nft = allNFTs.find(n => n._id === nftId);
-            if (!nft) return;
-            
-            const sessionRes = await fetch('/api/auth/session');
-            const session = await sessionRes.json();
-            
-            if (!session.authenticated) {
-                const loginResult = await Swal.fire({
-                    icon: 'warning',
-                    title: 'Login Required',
-                    text: 'You need to login to purchase NFTs. Go to login page?',
-                    showCancelButton: true,
-                    confirmButtonText: 'Go to Login',
-                    cancelButtonText: 'Cancel',
-                    confirmButtonColor: '#3b82f6'
-                });
-                if (loginResult.isConfirmed) {
-                    window.location.href = '/dashboard.html';
-                }
-                return;
-            }
-            
-            const result = await Swal.fire({
-                icon: 'question',
-                title: 'Confirm Purchase',
-                text: `Are you sure you want to buy "${nft.name}" for ${nft.price} ${nft.currency || 'ETH'}?`,
-                showCancelButton: true,
-                confirmButtonText: 'Buy Now',
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: '#3b82f6'
-            });
-            if (!result.isConfirmed) return;
-            
-            try {
-                const res = await fetch(`/api/marketplace/nfts/${nftId}/buy`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                
-                if (!res.ok) {
-                    const error = await res.json();
-                    throw new Error(error.message || 'Purchase failed');
-                }
-                
-                const purchaseResult = await res.json();
-                await Swal.fire({
-                    icon: 'success',
-                    title: 'Success',
-                    text: `Congratulations! You now own "${nft.name}". The artwork has been transferred to your collection.`,
-                    confirmButtonColor: '#3b82f6'
-                });
-                
-                closeArtworkModal();
-                loadMarketplaceData();
-            } catch (err) {
-                await Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: err.message || 'Failed to complete purchase. Please try again.',
-                    confirmButtonColor: '#3b82f6'
-                });
-            }
+  const token = localStorage.getItem('token');
+
+  if (!token) {
+    await Swal.fire({
+      icon: 'warning',
+      title: 'Login Required',
+      text: 'Please login to continue',
+      confirmButtonColor: '#3b82f6'
+    });
+    window.location.href = '/dashboard.html';
+    return;
+  }
+
+  const confirm = await Swal.fire({
+    icon: 'question',
+    title: 'Confirm Purchase',
+    text: 'Are you sure you want to buy this NFT?',
+    showCancelButton: true,
+    confirmButtonText: 'Buy Now',
+    confirmButtonColor: '#3b82f6'
+  });
+
+  if (!confirm.isConfirmed) return;
+
+  try {
+    const res = await fetch(
+      `https://changes-sample.onrender.com/api/sales/${nftId}/buy`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` // 🔐 buyer identity
         }
+      }
+    );
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+
+    await Swal.fire({
+      icon: 'success',
+      title: 'Purchase Successful',
+      confirmButtonColor: '#3b82f6'
+    });
+
+  } catch (err) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Purchase Failed',
+      text: err.message || 'Something went wrong'
+    });
+  }
+}
+
         
         async function placeBid(nftId) {
             const { value: bidAmount } = await Swal.fire({

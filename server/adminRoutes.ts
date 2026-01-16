@@ -2,7 +2,8 @@ import type { Express, Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import { Collection, NFT, Sale, Auction, Exhibition, Transaction, Admin, FinancialRequest } from "./models";
 import { sendDepositApprovalNotification, sendWithdrawalApprovalNotification } from "./email";
-import { Request, Response, NextFunction } from "express";
+import { NextFunction } from "express";
+import jwt from "jsonwebtoken";
 import User from "./models/User";
 
 declare module 'express-session' {
@@ -10,6 +11,7 @@ declare module 'express-session' {
     adminId?: string;
     adminEmail?: string;
     adminRole?: string;
+    
     impersonatedUserId?: string;
   }
 }
@@ -31,46 +33,76 @@ async function getUser(req: Request, ){
 
   }
 
-export const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
+export const requireAdmin = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    // 1️⃣ Read token from Authorization header
-    const authHeader = req.headers['authorization'];
+    const authHeader = req.headers.authorization;
     if (!authHeader) {
-      return res.status(401).json({ message: 'Admin authentication required: No token' });
+      return res.status(401).json({ message: 'No token provided' });
     }
 
-    const token = authHeader.split(' ')[1]; // "Bearer <token>"
+    const token = authHeader.split(' ')[1];
     if (!token) {
-      return res.status(401).json({ message: 'Admin authentication required: Invalid token' });
+      return res.status(401).json({ message: 'Invalid token format' });
     }
 
-    // 2️⃣ Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'super-secret-key') as any;
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || 'super-secret-key'
+    ) as any;
 
-    // 3️⃣ Check if user is admin
     if (!decoded.isAdmin) {
-      return res.status(403).json({ message: 'Admin authentication required: Not an admin' });
+      return res.status(403).json({ message: 'Admin access only' });
     }
 
-    // 4️⃣ Attach admin info to request for later use
-    req.user = decoded;
+    // ✅ SAFE PLACE TO STORE USER
+    res.locals.user = {
+      userId: decoded.userId,
+      email: decoded.email,
+      role: decoded.role,
+      isAdmin: decoded.isAdmin
+    };
 
     next();
   } catch (err) {
     console.error('Admin auth error:', err);
-    return res.status(401).json({ message: 'Admin authentication required: Invalid or expired token' });
+    return res.status(401).json({ message: 'Invalid or expired token' });
   }
 };
 
-const requireSuperAdmin = (req: Request, res: Response, next: Function) => {
-  if (!req.session.adminId) {
-    return res.status(401).json({ message: 'Admin authentication required' });
+
+
+export const requireSuperAdmin = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ message: 'No token provided' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || 'super-secret-key'
+    ) as any;
+
+    if (!decoded.isAdmin || decoded.role !== 'superadmin') {
+      return res.status(403).json({ message: 'Super admin only' });
+    }
+
+    res.locals.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: 'Invalid or expired token' });
   }
-  if (req.session.adminRole !== 'superadmin') {
-    return res.status(403).json({ message: 'Superadmin access required' });
-  }
-  next();
 };
+
 
 export function registerAdminRoutes(app: Express) {
   
@@ -104,69 +136,73 @@ export function registerAdminRoutes(app: Express) {
 
   // ===== ADMIN AUTHENTICATION =====
   app.post('/api/admin/login', async (req: Request, res: Response) => {
-    try {
-      const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-      if (!email || !password) {
-        return res.status(400).json({ message: 'Email and password are required' });
-      }
-
-      const admin = await Admin.findOne({ email: email.toLowerCase() });
-      if (!admin) {
-        return res.status(401).json({ message: 'Invalid credentials' });
-      }
-
-      const isMatch = await bcrypt.compare(password, admin.password);
-      if (!isMatch) {
-        return res.status(401).json({ message: 'Invalid credentials' });
-      }
-
-      admin.lastLogin = new Date();
-      await admin.save();
-
-      req.session.adminId = admin._id.toString();
-      req.session.adminEmail = admin.email;
-      req.session.adminRole = admin.role;
-  req.session.save((err) => {
-      if (err) {
-        console.error('Session save error:', err);
-        return res.status(500).json({ message: 'Login succeeded but session failed' });
-      }
-      res.json({ 
-        message: 'Admin login successful',
-        admin: {
-          email: admin.email,
-          username: admin.username,
-          role: admin.role
-        }
-      });
-      });
-    } catch (error) {
-      console.error('Admin login error:', error);
-      res.status(500).json({ message: 'Failed to login' });
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
     }
-  });
 
-  app.post('/api/admin/logout', (req: Request, res: Response) => {
-    req.session.adminId = undefined;
-    req.session.adminEmail = undefined;
-    req.session.adminRole = undefined;
-    req.session.impersonatedUserId = undefined;
-    res.json({ message: 'Admin logged out successfully' });
-  });
-
-  app.get('/api/admin/session', (req: Request, res: Response) => {
-    if (req.session.adminId) {
-      res.json({ 
-        authenticated: true,
-        email: req.session.adminEmail,
-        role: req.session.adminRole,
-        impersonating: req.session.impersonatedUserId || null
-      });
-    } else {
-      res.json({ authenticated: false });
+    const admin = await Admin.findOne({ email: email.toLowerCase() });
+    if (!admin) {
+      return res.status(401).json({ message: 'Invalid credentials' });
     }
+
+    const isMatch = await bcrypt.compare(password, admin.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    admin.lastLogin = new Date();
+    await admin.save();
+
+    // ✅ CREATE JWT
+    const token = jwt.sign(
+      {
+        userId: admin._id.toString(),
+        email: admin.email,
+        role: admin.role,
+        isAdmin: true
+      },
+      process.env.JWT_SECRET || 'super-secret-key',
+      { expiresIn: '7d' }
+    );
+
+    res.json({
+      message: 'Admin login successful',
+      token,
+      admin: {
+        email: admin.email,
+        username: admin.username,
+        role: admin.role
+      }
+    });
+
+  } catch (error) {
+    console.error('Admin login error:', error);
+    res.status(500).json({ message: 'Failed to login' });
+  }
+});
+
+
+ app.post('/api/admin/logout', (_req: Request, res: Response) => {
+  res.json({
+    message: 'Admin logged out successfully'
   });
+});
+
+
+ app.get('/api/admin/session', requireAdmin, (req: Request, res: Response) => {
+  const admin = res.locals.user;
+
+  res.json({
+    authenticated: true,
+    email: admin.email,
+    role: admin.role,
+    userId: admin.userId
+  });
+});
+
 
   // ===== DASHBOARD STATS =====
   app.get('/api/admin/stats', requireAdmin, async (_req: Request, res: Response) => {
@@ -309,30 +345,77 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
-  app.post('/api/admin/users/:id/impersonate', requireSuperAdmin, async (req: Request, res: Response) => {
+  app.post(
+  '/api/admin/users/:id/impersonate',
+  requireSuperAdmin,
+  async (req: Request, res: Response) => {
     try {
       const user = await User.findById(req.params.id);
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
 
-      req.session.impersonatedUserId = user._id.toString();
-      req.session.userId = user._id.toString();
-      req.session.email = user.email;
+      const admin = res.locals.user; // set by requireSuperAdmin
 
-      res.json({ message: `Now impersonating user: ${user.email}`, user: { email: user.email, username: user.username } });
+      // ✅ ISSUE IMPERSONATION TOKEN
+      const impersonationToken = jwt.sign(
+        {
+          adminId: admin.userId,
+          userId: user._id.toString(),
+          email: user.email,
+          isAdmin: true,
+          impersonating: true
+        },
+        process.env.JWT_SECRET || 'super-secret-key',
+        { expiresIn: '1h' } // short-lived
+      );
+
+      res.json({
+        message: `Now impersonating user: ${user.email}`,
+        token: impersonationToken,
+        user: {
+          email: user.email,
+          username: user.username
+        }
+      });
+
     } catch (error) {
       console.error('Impersonate user error:', error);
       res.status(500).json({ message: 'Failed to impersonate user' });
     }
-  });
+  }
+);
 
-  app.post('/api/admin/stop-impersonation', requireAdmin, async (req: Request, res: Response) => {
-    req.session.impersonatedUserId = undefined;
-    req.session.userId = undefined;
-    req.session.email = undefined;
-    res.json({ message: 'Stopped impersonation' });
-  });
+
+ app.post(
+  '/api/admin/stop-impersonation',
+  requireAdmin,
+  (req: Request, res: Response) => {
+    const admin = res.locals.user;
+
+    if (!admin.impersonating) {
+      return res.status(400).json({ message: 'Not impersonating' });
+    }
+
+    // ✅ RESTORE ORIGINAL ADMIN TOKEN
+    const adminToken = jwt.sign(
+      {
+        userId: admin.adminId, // original admin
+        email: admin.email,
+        role: admin.role,
+        isAdmin: true
+      },
+      process.env.JWT_SECRET || 'super-secret-key',
+      { expiresIn: '7d' }
+    );
+
+    res.json({
+      message: 'Stopped impersonation',
+      token: adminToken
+    });
+  }
+);
+
 
   // ===== NFT MANAGEMENT =====
   app.get('/api/admin/nfts', requireAdmin, async (req: Request, res: Response) => {

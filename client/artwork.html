@@ -724,63 +724,61 @@
             }
         }
         
-        async function buyNFT() {
-            const sessionRes = await fetch('/api/auth/session');
-            const session = await sessionRes.json();
-            
-            if (!session.authenticated) {
-                const result = await Swal.fire({
-                    icon: 'warning',
-                    title: 'Login Required',
-                    text: 'You need to login to purchase NFTs. Go to login page?',
-                    showCancelButton: true,
-                    confirmButtonText: 'Go to Login',
-                    confirmButtonColor: '#3b82f6'
-                });
-                if (result.isConfirmed) {
-                    window.location.href = '/dashboard.html';
-                }
-                return;
-            }
-            
-            const result = await Swal.fire({
-                icon: 'question',
-                title: 'Confirm Purchase',
-                text: `Are you sure you want to buy "${currentNFT.name}" for ${currentNFT.price} ${currentNFT.currency || 'ETH'}?`,
-                showCancelButton: true,
-                confirmButtonText: 'Buy Now',
-                confirmButtonColor: '#3b82f6'
-            });
-            if (!result.isConfirmed) return;
-            
-            try {
-                const res = await fetch(`/api/marketplace/nfts/${currentNFT._id}/buy`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                
-                if (!res.ok) {
-                    const error = await res.json();
-                    throw new Error(error.message || 'Purchase failed');
-                }
-                
-                await Swal.fire({
-                    icon: 'success',
-                    title: 'Congratulations!',
-                    text: `You now own "${currentNFT.name}". The artwork has been transferred to your collection.`,
-                    confirmButtonColor: '#3b82f6'
-                });
-                
-                window.location.reload();
-            } catch (err) {
-                await Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: err.message || 'Failed to complete purchase.',
-                    confirmButtonColor: '#3b82f6'
-                });
-            }
+        async function buyNFT(nftId) {
+  const token = localStorage.getItem('token');
+
+  if (!token) {
+    await Swal.fire({
+      icon: 'warning',
+      title: 'Login Required',
+      text: 'Please login to continue',
+      confirmButtonColor: '#3b82f6'
+    });
+    window.location.href = '/dashboard.html';
+    return;
+  }
+
+  const confirm = await Swal.fire({
+    icon: 'question',
+    title: 'Confirm Purchase',
+    text: 'Are you sure you want to buy this NFT?',
+    showCancelButton: true,
+    confirmButtonText: 'Buy Now',
+    confirmButtonColor: '#3b82f6'
+  });
+
+  if (!confirm.isConfirmed) return;
+
+  try {
+    const res = await fetch(
+      `https://changes-sample.onrender.com/api/sales/${nftId}/buy`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` // 🔐 buyer identity
         }
+      }
+    );
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+
+    await Swal.fire({
+      icon: 'success',
+      title: 'Purchase Successful',
+      confirmButtonColor: '#3b82f6'
+    });
+
+  } catch (err) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Purchase Failed',
+      text: err.message || 'Something went wrong'
+    });
+  }
+}
+
         
         async function placeBid() {
             const { value: bidAmount } = await Swal.fire({
