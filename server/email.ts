@@ -48,20 +48,55 @@ export async function sendVerificationEmail(
     to,
     subject: "Verify Your Ethergalleries Account",
     html: `
-      <div style="font-family:Inter,sans-serif;max-width:600px;margin:auto;padding:40px">
-        <h1 style="text-align:center">Vault<span style="color:#5d8df4">orx</span></h1>
-        <div style="background:#f8fafc;padding:30px;border-radius:12px;text-align:center">
-          <h2>Welcome${username ? `, ${username}` : ""}!</h2>
-          <p>Use the code below to verify your email</p>
-          <div style="font-size:32px;letter-spacing:8px;background:#5d8df4;color:#fff;
-            padding:20px 40px;border-radius:8px;display:inline-block">
-            ${code}
-          </div>
-          <p style="font-size:14px;color:#94a3b8;margin-top:12px">
-            Code expires in 10 minutes
-          </p>
-        </div>
-      </div>
+      <div style="font-family: 'Inter', sans-serif; max-width:600px; margin:0 auto; padding:40px; background-color:#ffffff;">
+  <!-- Header -->
+  <h1 style="text-align:center; font-weight:700; font-size:28px; margin-bottom:30px; color:#111111;">
+    Ether<span style="color:#5d8df4;">galleries</span>
+  </h1>
+
+  <!-- Card -->
+  <div style="background:#f8f9fc; padding:40px 30px; border-radius:12px; text-align:center; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+    
+    <!-- Greeting -->
+    <h2 style="font-size:22px; color:#111827; margin-bottom:16px;">
+      Welcome${username ? `, ${username}` : ""}!
+    </h2>
+
+    <!-- Instruction -->
+    <p style="font-size:16px; color:#4b5563; margin-bottom:24px; line-height:1.6;">
+      Thank you for joining <strong>Ethergalleries</strong> — your gateway to discovering, collecting, and trading unique digital art and NFTs. We are excited to have you on board and look forward to helping you explore the world of blockchain collectibles.
+    </p>
+    
+    <p style="font-size:16px; color:#4b5563; margin-bottom:24px; line-height:1.6;">
+      To get started, please verify your email address by entering the code below. This ensures your account is secure and allows you to fully access all features, including purchasing, listing, and showcasing NFTs in your collection.
+    </p>
+
+    <!-- Code Box -->
+    <div style="display:inline-block; font-size:28px; letter-spacing:8px; font-weight:700; background:#5d8df4; color:#ffffff; padding:20px 40px; border-radius:8px; margin-bottom:16px;">
+      ${code}
+    </div>
+
+    <!-- Expiry Notice -->
+    <p style="font-size:14px; color:#94a3b8; margin-top:8px; line-height:1.4;">
+      This verification code will expire in 10 minutes. Please enter it promptly to activate your account.
+    </p>
+
+    <!-- Closing Remark -->
+    <p style="font-size:16px; color:#4b5563; margin-top:24px; line-height:1.6;">
+      Once verified, you can start exploring the Ethergalleries marketplace, connect with other collectors, and experience the exciting world of digital art. If you have any questions, our support team is here to assist you.
+    </p>
+
+    <p style="font-size:16px; color:#4b5563; margin-top:12px; line-height:1.6;">
+      Welcome again to the Ethergalleries community — where art meets innovation.
+    </p>
+  </div>
+
+  <!-- Footer -->
+  <p style="text-align:center; font-size:12px; color:#9ca3af; margin-top:24px;">
+    If you did not create an account with Ethergalleries, please ignore this email.
+  </p>
+</div>
+
     `,
   });
 }
