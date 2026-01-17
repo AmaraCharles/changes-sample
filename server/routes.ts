@@ -1928,7 +1928,7 @@ app.get('/api/sales', async (req: Request, res: Response) => {
       }
 
       // Update NFT ownership
-      nft.owner = buyer.username || buyer.email;
+      nft.owner =buyer.email;
       nft.status = 'owned';
       nft.price = undefined;
       await nft.save();
