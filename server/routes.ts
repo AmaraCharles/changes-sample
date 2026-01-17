@@ -1950,7 +1950,7 @@ app.get('/api/sales', async (req: Request, res: Response) => {
       });
 
       // Remove from sales listing
-      await Sale.findOneAndDelete({ nftId: nft._id });
+      // await Sale.findOneAndDelete({ nftId: nft._id });
 
       // Send email notifications
       sendPurchaseConfirmation(buyer.email, nft.name, price, nft.currency || 'ETH').catch(err => 
