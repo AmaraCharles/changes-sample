@@ -1945,6 +1945,7 @@ app.get('/api/sales', async (req: Request, res: Response) => {
         currency: nft.currency || 'ETH',
         nft: nft._id,
         from: previousOwner,
+        owner: buyer.email,
         to: buyer.username || buyer.email,
         status: 'completed'
       });
