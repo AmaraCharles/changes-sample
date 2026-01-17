@@ -1866,6 +1866,7 @@ app.get('/api/sales', async (req: Request, res: Response) => {
 
   app.post('/api/marketplace/nfts/:id/buy', async (req: Request, res: Response) => {
     try {
+      const userdet= await getUserId(req)
       const { id } = req.params;
       const nft = await NFT.findById(id);
 
@@ -1877,11 +1878,11 @@ app.get('/api/sales', async (req: Request, res: Response) => {
         return res.status(400).json({ message: 'This NFT is not for sale' });
       }
 
-      if (!req.session.userId) {
+      if (!userdet) {
         return res.status(401).json({ message: 'Please login to purchase' });
       }
 
-      const buyer = await User.findById(req.session.userId);
+      const buyer = await User.findById(userdet);
       if (!buyer) {
         return res.status(401).json({ message: 'User not found' });
       }
