@@ -527,7 +527,7 @@ app.post('/api/auth/login', async (req: Request, res: Response) => {
         return res.status(400).json({ message: 'Password must be at least 8 characters' });
       }
 
-      const user = await User.findById(req.session.userId);
+      const user = await User.findById(getUser);
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
@@ -2062,7 +2062,7 @@ app.get('/api/sales', async (req: Request, res: Response) => {
         return res.status(401).json({ message: 'Please login first' });
       }
 
-      const requests = await FinancialRequest.find({ userId: req.session.userId }).sort({ createdAt: -1 });
+      const requests = await FinancialRequest.find({ userId:getUser }).sort({ createdAt: -1 });
       res.json(requests);
     } catch (error) {
       console.error('Fetch requests error:', error);
