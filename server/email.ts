@@ -107,7 +107,7 @@ export async function sendPasswordResetEmail(to: string, code: string) {
     subject: "Reset Your Ethergalleries Password",
     html: `
       <div style="font-family:Inter,sans-serif;max-width:600px;margin:auto;padding:40px">
-        <h1 style="text-align:center">Vault<span style="color:#ef4444">orx</span></h1>
+        <h1 style="text-align:center">Ether<span style="color:#ef4444">galleries</span></h1>
         <div style="background:#fef2f2;padding:30px;border-radius:12px;text-align:center">
           <h2>Password Reset</h2>
           <div style="font-size:32px;letter-spacing:8px;background:#ef4444;color:#fff;
@@ -134,7 +134,7 @@ export async function sendPurchaseConfirmation(
     subject: `Purchase Confirmed: ${nftName}`,
     html: `
       <div style="font-family:Inter,sans-serif;max-width:600px;margin:auto;padding:40px">
-        <h1 style="text-align:center">Vault<span style="color:#22c55e">orx</span></h1>
+        <h1 style="text-align:center">Ether<span style="color:#22c55e">galleries</span></h1>
         <div style="background:#f0fdf4;padding:30px;border-radius:12px;text-align:center">
           <h2>🎉 Purchase Successful!</h2>
           <h3>${nftName}</h3>
@@ -157,7 +157,7 @@ export async function sendSaleNotification(
     subject: `Your NFT "${nftName}" Has Been Sold`,
     html: `
       <div style="font-family:Inter,sans-serif;max-width:600px;margin:auto;padding:40px">
-        <h1 style="text-align:center">Vault<span style="color:#d97706">orx</span></h1>
+        <h1 style="text-align:center">Ether<span style="color:#d97706">galleries</span></h1>
         <div style="background:#fef3c7;padding:30px;border-radius:12px;text-align:center">
           <h2>💰 You Made a Sale!</h2>
           <p><strong>${nftName}</strong></p>
