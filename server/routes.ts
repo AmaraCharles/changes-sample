@@ -170,7 +170,7 @@ async function getUserId(req: Request): Promise<string> {
 
 
 
-export async function resolveUsername(
+ async function resolveUsername(
   req: Request,
   res: Response,
   next: NextFunction
