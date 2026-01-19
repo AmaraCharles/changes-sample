@@ -1398,6 +1398,7 @@ app.get('/api/sales', async (req: Request, res: Response) => {
         startTime: new Date(startTime),
         endTime: new Date(endTime),
         currency: currency || 'WETH',
+        owner:userEm,
         status: new Date(startTime) <= new Date() ? 'active' : 'pending',
       });
 
