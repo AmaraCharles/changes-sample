@@ -153,6 +153,7 @@ export async function registerRoutes(
   }
 }
 
+
 async function getUserId(req: Request): Promise<string> {
   const authHeader = req.headers.authorization;
   if (!authHeader) throw new Error("No token");
@@ -165,6 +166,36 @@ async function getUserId(req: Request): Promise<string> {
   ) as { userId: string };
 
   return decoded.userId; // already a string ✅
+}
+
+
+
+export async function resolveUsername(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const { username } = req.params;
+
+    if (!username) {
+      return res.status(400).json({ message: "Username is required" });
+    }
+
+    const user = await User.findOne({ username }).select("email");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // attach email for downstream handlers
+    (req as any).userEmail = user.email;
+
+    next();
+  } catch (err) {
+    console.error("resolveUsername error:", err);
+    res.status(500).json({ message: "Failed to resolve username" });
+  }
 }
 
 
@@ -190,25 +221,29 @@ async function getUserId(req: Request): Promise<string> {
   });
 
 
-  app.get('/api/user/avatar', async (req: Request, res: Response) => {
+
+app.get("/api/user/avatar/:username",
+  resolveUsername,
+  async (req: Request, res: Response) => {
     try {
-      const userId = await getUser(req)
-    
-      if (!userId) {
-        return res.status(401).json({ message: 'Not authenticated' });
-      }
-      const dbUser = await User.findOne({email:userId});
+      const email = (req as any).userEmail;
+
+      const dbUser = await User.findOne({ email }).select("profileImage");
+
       if (!dbUser) {
-        return res.status(404).json({ message: 'User not found' });
+        return res.status(404).json({ message: "User not found" });
       }
-      res.json({ 
+
+      return res.json({
         profileImage: dbUser.profileImage,
-       
       });
     } catch (error) {
-      res.status(500).json({ message: 'Failed to get balance' });
+      console.error(error);
+      res.status(500).json({ message: "Failed to get avatar" });
     }
-  });
+  }
+);
+
   // Transfer WETH to ETH (with 9.5% fee)
   app.post('/api/user/convert-weth', async (req: Request, res: Response) => {
     try {
