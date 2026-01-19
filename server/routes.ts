@@ -189,6 +189,26 @@ async function getUserId(req: Request): Promise<string> {
     }
   });
 
+
+  app.get('/api/user/avatar', async (req: Request, res: Response) => {
+    try {
+      const userId = await getUser(req)
+    
+      if (!userId) {
+        return res.status(401).json({ message: 'Not authenticated' });
+      }
+      const dbUser = await User.findOne({email:userId});
+      if (!dbUser) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      res.json({ 
+        profileImage: dbUser.profileImage,
+       
+      });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to get balance' });
+    }
+  });
   // Transfer WETH to ETH (with 9.5% fee)
   app.post('/api/user/convert-weth', async (req: Request, res: Response) => {
     try {
