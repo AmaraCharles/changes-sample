@@ -1819,7 +1819,7 @@ app.get('/api/sales', async (req: Request, res: Response) => {
 
   app.get('/api/marketplace/exhibitions', async (req: Request, res: Response) => {
     try {
-      const exhibitions = await Exhibition.find({ status: 'upcoming' })
+      const exhibitions = await Exhibition.find({ status: 'active' })
         .sort({ startDate: 1 })
         .lean();
       res.json(exhibitions);
