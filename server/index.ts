@@ -20,6 +20,8 @@ const allowedOrigins = [
   "https://www.ethergalleries.com",
   "https://ethergalleries.com",
   "https://clentmode.vercel.app",
+  "https://blocktoart.com",
+  "https://www.blocktoart.com",
   "http://localhost:5000",
   "http://127.0.0.1:5503"
 ];
