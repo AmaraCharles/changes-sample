@@ -20,7 +20,8 @@ const allowedOrigins = [
   "https://www.ethergalleries.com",
   "https://ethergalleries.com",
   "https://clentmode.vercel.app",
-  "http://localhost:5000"
+  "http://localhost:5000",
+  "http://127.0.0.1:5503"
 ];
 
 app.use(cors({
