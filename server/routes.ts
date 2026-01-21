@@ -199,6 +199,14 @@ async function getUserId(req: Request): Promise<string> {
 }
 
 
+async function emailToUsername(email: string): Promise<string | null> {
+  const user = await User.findOne({
+    email: email.trim().toLowerCase()
+  }).select("username");
+
+  return user ? user.username : null;
+}
+
   // Get user balance (both ETH and WETH)
   app.get('/api/user/balance', async (req: Request, res: Response) => {
     try {
@@ -220,6 +228,41 @@ async function getUserId(req: Request): Promise<string> {
     }
   });
 
+
+app.get("/api/user/by-email/:email", async (req: Request, res: Response) => {
+  try {
+    const { email } = req.params;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const username = await emailToUsername(email);
+
+    if (!username) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const dbUser = await User.findOne({ username }).select(
+      "username email walletBalance wethBalance"
+    );
+
+    if (!dbUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.json({
+      username: dbUser.username,
+      email: dbUser.email,
+      balance: dbUser.walletBalance || 0,
+      wethBalance: dbUser.wethBalance || 0
+    });
+
+  } catch (error) {
+    console.error("Get user by email error:", error);
+    return res.status(500).json({ message: "Failed to get user info" });
+  }
+});
 
 
 app.get("/api/user/avatar/:username",
