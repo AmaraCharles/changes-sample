@@ -2074,14 +2074,14 @@ app.get('/api/sales', async (req: Request, res: Response) => {
       await buyer.save();
 
       // Record transaction
-      await Transaction.create({
+    await Transaction.create({
         type: 'sold',
         description: `Purchased "${nft.name}" from You`,
         amount: price,
         currency: nft.currency || 'ETH',
         nft: nft._id,
         from: previousOwner,
-        owner: buyer.email,
+        owner:previousOwner,
         to: buyer.username || buyer.email,
         status: 'completed'
       });
@@ -2097,6 +2097,7 @@ app.get('/api/sales', async (req: Request, res: Response) => {
         to: buyer.username || buyer.email,
         status: 'completed'
       });
+      
       // Remove from sales listing
       // await Sale.findOneAndDelete({ nftId: nft._id });
 
