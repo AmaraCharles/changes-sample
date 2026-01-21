@@ -949,24 +949,30 @@ const listedVolume = await NFT.aggregate([
 app.get('/api/nfts/user', async (req: Request, res: Response) => {
   try {
     const userEmail = await getUser(req);
-    if (!userEmail) return res.status(401).json({ message: 'User not authenticated' });
 
-    // Filter NFTs by email (case-insensitive)
-    const filter: any = {
-      owner: { $regex: `^${userEmail.trim()}$`, $options: 'i' }
-    };
+    if (!userEmail) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
 
-    
-    const nfts = await NFT.find(filter)
-      .populate({path:"collection",select:"name"})
-      .sort({ createdAt: -1 });
+    const normalizedEmail = userEmail.trim().toLowerCase();
 
-   
-    const owned = nfts.filter(n => n.status === 'owned');
-    const listed = nfts.filter(n => n.status === 'listed');
-    const sold = nfts.filter(n => n.status === 'sold');
- const auction = nfts.filter(n => n.status === 'auction');
-    res.json({
+    const nfts = await NFT.find({
+      owner: normalizedEmail
+    })
+      .populate({
+        path: 'collectionId', // ✅ FIXED
+        select: 'name'
+      })
+      .sort({ createdAt: -1 })
+      .lean(); // ✅ faster & safer for filtering
+
+    // Defensive status handling
+    const owned = nfts.filter(n => n.status?.toLowerCase() === 'owned');
+    const listed = nfts.filter(n => n.status?.toLowerCase() === 'listed');
+    const sold = nfts.filter(n => n.status?.toLowerCase() === 'sold');
+    const auction = nfts.filter(n => n.status?.toLowerCase() === 'auction');
+
+    return res.json({
       all: nfts,
       owned,
       listed,
@@ -977,14 +983,19 @@ app.get('/api/nfts/user', async (req: Request, res: Response) => {
         owned: owned.length,
         listed: listed.length,
         sold: sold.length,
-        auction:auction.length
-      },
+        auction: auction.length
+      }
     });
-  } catch (error) {
+
+  } catch (error: any) {
     console.error('Error fetching user NFTs:', error);
-    res.status(500).json({ message: 'Failed to get NFTs', error: error.message });
+    return res.status(500).json({
+      message: 'Failed to get NFTs',
+      error: error.message
+    });
   }
 });
+
 
 
   app.get('/api/nfts/:id', async (req: Request, res: Response) => {
