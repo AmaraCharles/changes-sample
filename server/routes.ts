@@ -287,6 +287,30 @@ app.get("/api/user/avatar/:username",
   }
 );
 
+
+app.get("/api/user/bio/:username",
+  resolveUsername,
+  async (req: Request, res: Response) => {
+    try {
+      const email = (req as any).userEmail;
+
+      const dbUser = await User.findOne({ email }).select("profileImage");
+
+      if (!dbUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      return res.json({
+        bio: dbUser.bio,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Failed to get avatar" });
+    }
+  }
+);
+
+
   // Transfer WETH to ETH (with 9.5% fee)
   app.post('/api/user/convert-weth', async (req: Request, res: Response) => {
     try {
