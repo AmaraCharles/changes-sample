@@ -294,7 +294,7 @@ app.get("/api/user/bio/:username",
     try {
       const email = (req as any).userEmail;
 
-      const dbUser = await User.findOne({ email }).select("profileImage");
+      const dbUser = await User.findOne({ email }).select("bio");
 
       if (!dbUser) {
         return res.status(404).json({ message: "User not found" });
