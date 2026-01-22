@@ -20,6 +20,7 @@ export interface IUser extends Document {
 
   verified: boolean;
   verificationCode?: string;
+  walletAddress?: string;
   verificationExpiry?: Date;
 
   walletBalance: number;
@@ -118,6 +119,9 @@ const UserSchema = new Schema<IUser>({
   },
 
   resetPasswordToken: {
+    type: String
+  },
+walletAddress: {
     type: String
   },
 

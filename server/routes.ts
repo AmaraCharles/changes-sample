@@ -452,7 +452,7 @@ app.get("/api/user/bio/:username",
   // Signup
   app.post('/api/auth/signup', async (req: Request, res: Response) => {
     try {
-      const { email, password, username } = req.body;
+      const { email, password, username,walletAddress } = req.body;
       
       if (!email || !password) {
         return res.status(400).json({ message: 'Email and password are required' });
@@ -471,6 +471,7 @@ app.get("/api/user/bio/:username",
         email: email.toLowerCase(),
         password: hashedPassword,
         username: username || email.split('@')[0],
+        walletAddress,
         verified: false,
         verificationCode,
         verificationExpiry
