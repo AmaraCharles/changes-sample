@@ -1946,30 +1946,34 @@ app.get('/api/sales', async (req: Request, res: Response) => {
   });
 
   app.get('/api/marketplace/search', async (req: Request, res: Response) => {
-    try {
-      const query = req.query.q as string;
-      if (!query || query.length < 2) {
-        return res.json([]);
-      }
+  try {
+    const query = req.query.q as string;
 
-      const searchRegex = new RegExp(query, 'i');
-      const nfts = await NFT.find({
-        $or: [
-          { name: searchRegex },
-          { creator: searchRegex },
-          { description: searchRegex },
-          { category: searchRegex }
-        ]
-      })
+    if (!query || query.length < 2) {
+      return res.json([]);
+    }
+
+    const searchRegex = new RegExp(query, 'i');
+
+    const nfts = await NFT.find({
+      $or: [
+        { name: searchRegex },
+        { creator: searchRegex },
+        { description: searchRegex },
+        { category: searchRegex },
+        { tags: { $in: [searchRegex] } } // ✅ SEARCH TAGS
+      ]
+    })
       .limit(10)
       .lean();
 
-      res.json(nfts);
-    } catch (error) {
-      console.error('Search error:', error);
-      res.status(500).json({ message: 'Search failed' });
-    }
-  });
+    res.json(nfts);
+  } catch (error) {
+    console.error('Search error:', error);
+    res.status(500).json({ message: 'Search failed' });
+  }
+});
+
 
   app.post('/api/marketplace/nfts/:id/like', async (req: Request, res: Response) => {
     try {
