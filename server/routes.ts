@@ -227,7 +227,37 @@ async function emailToUsername(email: string): Promise<string | null> {
       res.status(500).json({ message: 'Failed to get balance' });
     }
   });
+// Public route to fetch users
+app.get('/api/users', async (req: Request, res: Response) => {
+  try {
+    const { page = 1, limit = 20, search = '', status = '' } = req.query;
+    const skip = (Number(page) - 1) * Number(limit);
 
+    let query: any = {};
+    if (search) {
+      query.$or = [
+        { email: { $regex: search, $options: 'i' } },
+        { username: { $regex: search, $options: 'i' } }
+      ];
+    }
+    if (status === 'verified') query.verified = true;
+    if (status === 'unverified') query.verified = false;
+
+    const [users, total] = await Promise.all([
+      User.find(query)
+          .select('-password -verificationCode') // hide sensitive info
+          .skip(skip)
+          .limit(Number(limit))
+          .sort({ createdAt: -1 }),
+      User.countDocuments(query)
+    ]);
+
+    res.json({ users, total, pages: Math.ceil(total / Number(limit)) });
+  } catch (error) {
+    console.error('Fetch users error:', error);
+    res.status(500).json({ message: 'Failed to fetch users' });
+  }
+});
 
 app.get("/api/user/by-email/:email", async (req: Request, res: Response) => {
   try {
