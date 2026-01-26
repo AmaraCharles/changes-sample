@@ -887,6 +887,17 @@ const listedVolume = await NFT.aggregate([
   }
 });
 
+app.get('/api/marketplace/collections', async (req: Request, res: Response) => {
+  try {
+    // Fetch all collections from the database
+    const collections = await Collection.find({}).sort({ createdAt: -1 });
+
+    res.json(collections);
+  } catch (error) {
+    console.error('Failed to get collections:', error);
+    res.status(500).json({ message: 'Failed to get collections' });
+  }
+});
 
   app.get('/api/collections/:id', async (req: Request, res: Response) => {
     try {
