@@ -23,7 +23,8 @@ const allowedOrigins = [
   "https://blocktoart.com",
   "https://www.blocktoart.com",
   "http://localhost:5000",
-  "http://127.0.0.1:5503"
+  "http://127.0.0.1:5503",
+  "http://127.0.0.1:5504"
 ];
 
 app.use(cors({
