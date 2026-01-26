@@ -254,6 +254,7 @@ app.get("/api/user/by-email/:email", async (req: Request, res: Response) => {
     return res.json({
       username: dbUser.username,
       email: dbUser.email,
+      profileImage: dbUser.profileImage,
       balance: dbUser.walletBalance || 0,
       wethBalance: dbUser.wethBalance || 0
     });
