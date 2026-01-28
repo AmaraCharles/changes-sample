@@ -2002,6 +2002,7 @@ app.get('/api/sales', async (req: Request, res: Response) => {
       $or: [
         { name: searchRegex },
         { creator: searchRegex },
+        { owner: searchRegex },
         { description: searchRegex },
         { category: searchRegex },
         { tags: { $in: [searchRegex] } } // ✅ SEARCH TAGS
