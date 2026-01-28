@@ -310,6 +310,7 @@ app.get("/api/user/avatar/:username",
 
       return res.json({
         profileImage: dbUser.profileImage,
+        email:dbUser.email,
       });
     } catch (error) {
       console.error(error);
