@@ -303,14 +303,14 @@ app.get("/api/user/avatar/:username",
       const email = (req as any).userEmail;
 
       const dbUser = await User.findOne({ email }).select("profileImage");
-
+const emUser = await User.findOne({ email }).select("email");
       if (!dbUser) {
         return res.status(404).json({ message: "User not found" });
       }
 
       return res.json({
         profileImage: dbUser.profileImage,
-        email:dbUser.email,
+        email:emUser.email,
       });
     } catch (error) {
       console.error(error);
