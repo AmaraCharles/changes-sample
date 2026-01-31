@@ -31,12 +31,12 @@ export const upload = multer({
 export async function uploadToCloudinary(
   buffer: Buffer,
   folder: string = 'Ethergalleries'
-): Promise<{ url: string; publicId: string }> {
+): Promise<{ url: string; publicId: string; resourceType: string }> {
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
         folder,
-        resource_type: 'image',
+        resource_type: 'auto', // ✅ FIX
       },
       (error, result) => {
         if (error) {
@@ -45,6 +45,7 @@ export async function uploadToCloudinary(
           resolve({
             url: result.secure_url,
             publicId: result.public_id,
+            resourceType: result.resource_type,
           });
         }
       }
