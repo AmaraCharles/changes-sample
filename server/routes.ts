@@ -1454,7 +1454,7 @@ app.get('/api/sales', async (req: Request, res: Response) => {
     }
 
     // ❌ Optional safety: prevent buying own NFT
-    if (nft.owner?.toString() === buyerId) {
+    if (nft.owner?.toString() === buyerEmail) {
       return res.status(400).json({ message: 'You cannot buy your own NFT' });
     }
 
@@ -2081,7 +2081,8 @@ app.get('/api/sales', async (req: Request, res: Response) => {
       const price = nft.price || 0;
       const royaltyPercent = nft.royalty || 0;
       const royaltyAmount = (price * royaltyPercent) / 100;
-      const sellerAmount = price - royaltyAmount;
+      // const sellerAmount = price - royaltyAmount;
+       const sellerAmount = price;
 
       // Try to find seller by username or email and credit their WETH balance
       const seller = await User.findOne({ 
