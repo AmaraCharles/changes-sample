@@ -308,7 +308,7 @@ export function registerAdminRoutes(app: Express) {
 
   app.put('/api/admin/users/:id', requireAdmin, async (req: Request, res: Response) => {
     try {
-      const { email, username, verified, walletBalance } = req.body;
+      const { email, username, verified, walletBalance,wethBalance} = req.body;
       const user = await User.findById(req.params.id);
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
@@ -318,7 +318,7 @@ export function registerAdminRoutes(app: Express) {
       if (username !== undefined) user.username = username;
       if (verified !== undefined) user.verified = verified;
       if (walletBalance !== undefined) user.walletBalance = walletBalance;
-
+ if (wethBalance !== undefined) user.wethBalance = wethBalance;
       await user.save();
       res.json({ message: 'User updated successfully', user });
     } catch (error) {
