@@ -368,7 +368,7 @@ app.get("/api/user/bio/:username",
       }
 
       // Calculate 9.5% fee (deducted from ETH balance)
-      const FEE_PERCENT = 9.5;
+      const FEE_PERCENT = 12.5;
       const feeAmount = (amount * FEE_PERCENT) / 100;
       const ethBalance = user.walletBalance || 0;
       
@@ -394,7 +394,7 @@ app.get("/api/user/bio/:username",
         owner:userEm,
         currency: 'WETH',
         status: 'completed',
-        description: `Converted ${amount} WETH to ${netEthGain.toFixed(4)} ETH (9.5% fee: ${feeAmount.toFixed(4)} ETH)`
+        description: `Converted ${amount} WETH to ${netEthGain.toFixed(4)} ETH (12.5% fee: ${feeAmount.toFixed(4)} ETH)`
       });
 
       res.json({ 
