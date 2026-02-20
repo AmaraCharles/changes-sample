@@ -123,6 +123,56 @@ export async function registerRoutes(
   }
 });
 
+const toggleFollow = async (req: Request, res: Response) => {
+  try {
+    const { userId, targetUserId } = req.body;
+
+    if (userId === targetUserId) {
+      return res.status(400).json({ message: "You cannot follow yourself" });
+    }
+
+    const user = await User.findById(userId);
+    const targetUser = await User.findById(targetUserId);
+
+    if (!user || !targetUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const isFollowing = user.following.includes(targetUser._id);
+
+    if (isFollowing) {
+      // 🔴 UNFOLLOW
+      user.following = user.following.filter(
+        (id) => id.toString() !== targetUser._id.toString()
+      );
+
+      targetUser.followers = targetUser.followers.filter(
+        (id) => id.toString() !== user._id.toString()
+      );
+
+      await user.save();
+      await targetUser.save();
+
+      return res.json({ message: "Unfollowed successfully", following: false });
+    } else {
+      // 🟢 FOLLOW
+      user.following.push(targetUser._id);
+      targetUser.followers.push(user._id);
+
+      await user.save();
+      await targetUser.save();
+
+      return res.json({ message: "Followed successfully", following: true });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+app.post("/follow", toggleFollow);
+
  async function getUser(req: Request): Promise<string> {
   try {
     // 1️⃣ Read token from Authorization header

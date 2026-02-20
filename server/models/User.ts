@@ -1,17 +1,23 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema, Types } from "mongoose";
 
 export interface IUser extends Document {
   email: string;
   password: string;
+
   username?: string;
   fullName?: string;
   bio?: string;
+
+  following: Types.ObjectId[];
+  followers: Types.ObjectId[];
+
   website?: string;
   twitter?: string;
   instagram?: string;
+
   profileImage?: string | null;
 
-  notifications?: {
+  notifications: {
     email: boolean;
     sales: boolean;
     bids: boolean;
@@ -20,9 +26,9 @@ export interface IUser extends Document {
 
   verified: boolean;
   verificationCode?: string;
-  walletAddress?: string;
   verificationExpiry?: Date;
 
+  walletAddress?: string;
   walletBalance: number;
   wethBalance: number;
 
@@ -34,103 +40,122 @@ export interface IUser extends Document {
   updatedAt: Date;
 }
 
+const UserSchema = new Schema<IUser>(
+  {
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
 
-const UserSchema = new Schema<IUser>({
-  email: { 
-    type: String, 
-    required: true, 
-    unique: true,
-    lowercase: true,
-    trim: true
-  },
+    password: {
+      type: String,
+      required: true,
+    },
 
-  password: { 
-    type: String, 
-    required: true 
-  },
+    username: {
+      type: String,
+      trim: true,
+    },
 
-  username: { 
-    type: String,
-    trim: true
-  },
+    fullName: {
+      type: String,
+      trim: true,
+    },
 
-  fullName: {
-    type: String,
-    trim: true
-  },
+    bio: {
+      type: String,
+      default: "",
+    },
 
-  bio: {
-    type: String,
-    default: ''
-  },
+    // ✅ Added followers & following
+    following: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        default: [],
+      },
+    ],
 
-  website: {
-    type: String,
-    trim: true
-  },
+    followers: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        default: [],
+      },
+    ],
 
-  twitter: {
-    type: String,
-    trim: true
-  },
+    website: {
+      type: String,
+      trim: true,
+    },
 
-  instagram: {
-    type: String,
-    trim: true
-  },
+    twitter: {
+      type: String,
+      trim: true,
+    },
 
-  profileImage: {
-    type: String,
-    default: null
-  },
+    instagram: {
+      type: String,
+      trim: true,
+    },
 
-  notifications: {
-    email: { type: Boolean, default: true },
-    sales: { type: Boolean, default: true },
-    bids: { type: Boolean, default: true },
-    exhibitions: { type: Boolean, default: true }
-  },
+    profileImage: {
+      type: String,
+      default: null,
+    },
 
-  verified: { 
-    type: Boolean, 
-    default: false 
-  },
+    notifications: {
+      email: { type: Boolean, default: true },
+      sales: { type: Boolean, default: true },
+      bids: { type: Boolean, default: true },
+      exhibitions: { type: Boolean, default: true },
+    },
 
-  verificationCode: { 
-    type: String 
-  },
+    verified: {
+      type: Boolean,
+      default: false,
+    },
 
-  verificationExpiry: { 
-    type: Date 
-  },
+    verificationCode: {
+      type: String,
+    },
 
-  walletBalance: {
-    type: Number,
-    default: 0
-  },
+    verificationExpiry: {
+      type: Date,
+    },
 
-  wethBalance: {
-    type: Number,
-    default: 0
-  },
+    walletAddress: {
+      type: String,
+    },
 
-  resetPasswordCode: {
-    type: String
-  },
+    walletBalance: {
+      type: Number,
+      default: 0,
+    },
 
-  resetPasswordToken: {
-    type: String
-  },
-walletAddress: {
-    type: String
-  },
+    wethBalance: {
+      type: Number,
+      default: 0,
+    },
 
-  resetPasswordExpiry: {
-    type: Date
+    resetPasswordCode: {
+      type: String,
+    },
+
+    resetPasswordToken: {
+      type: String,
+    },
+
+    resetPasswordExpiry: {
+      type: Date,
+    },
+  },
+  {
+    timestamps: true,
   }
-}, { 
-  timestamps: true 
-});
+);
 
-
-export default mongoose.model<IUser>('User', UserSchema);
+export default mongoose.model<IUser>("User", UserSchema);
