@@ -324,7 +324,7 @@ app.get("/api/user/by-email/:email", async (req: Request, res: Response) => {
     }
 
     const dbUser = await User.findOne({ username }).select(
-      "username email walletBalance wethBalance"
+      "username email walletBalance wethBalance level"
     );
 
     if (!dbUser) {
@@ -1427,7 +1427,7 @@ async function updateUserLevelByListings(userEmail: string) {
 
 
       await updateUserLevelByListings(dbUser.email);
-      
+
       // Create transaction for sale listing
       await new Transaction({
         type: 'listed',
