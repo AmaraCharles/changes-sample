@@ -36,6 +36,7 @@ import {
 import User from "./models/User";
 import bcrypt from "bcryptjs";
 import { registerAdminRoutes } from "./adminRoutes";
+import { db } from "./db";
 
 declare module 'express-session' {
   interface SessionData {
@@ -1225,7 +1226,7 @@ app.get("/api/user/update-level", async (req: Request, res: Response) => {
     // Count NFTs created by user with correct status
     const listedCount = await NFT.countDocuments({
       creator: dbUser.username,
-      status:"owned", // adjust to your real statuses
+      status: { $in: ["owned", "listed","auction"] } // adjust to your real statuses
     });
 
     console.log("Listed NFTs count:", listedCount);
