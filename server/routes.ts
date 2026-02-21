@@ -1219,37 +1219,27 @@ app.get("/api/user/update-level", async (req: Request, res: Response) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    // Get user first (so we can check existing level)
     const dbUser = await User.findOne({ email: userEmail });
-    if (!dbUser) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    if (!dbUser) return res.status(404).json({ message: "User not found" });
 
-    // Count NFTs created by the user that are listed
+    // Count NFTs created by user with correct status
     const listedCount = await NFT.countDocuments({
       creator: userEmail,
-      status: "owned" // change to "owned" if that is your real logic
+      status:"owned", // adjust to your real statuses
     });
+
+    console.log("Listed NFTs count:", listedCount);
 
     // Calculate level
     let calculatedLevel = 1;
+    if (listedCount <= 3) calculatedLevel = 1;
+    else if (listedCount <= 5) calculatedLevel = 2;
+    else if (listedCount <= 10) calculatedLevel = 3;
+    else if (listedCount <= 20) calculatedLevel = 4;
+    else calculatedLevel = 5;
 
-    if (listedCount <= 3) {
-      calculatedLevel = 1;
-    } else if (listedCount <= 5) {
-      calculatedLevel = 2;
-    } else if (listedCount <= 10) {
-      calculatedLevel = 3;
-    } else if (listedCount <= 20) {
-      calculatedLevel = 4;
-    } else {
-      calculatedLevel = 5;
-    }
+    const currentLevel = Number(dbUser.level) || 1;
 
-    // Check current level in DB
-    const currentLevel = dbUser.level || 1;
-
-    // Only update if level has changed
     if (currentLevel !== calculatedLevel) {
       await User.updateOne(
         { email: userEmail },
@@ -1270,7 +1260,8 @@ app.get("/api/user/update-level", async (req: Request, res: Response) => {
     return res.status(500).json({ message: "Failed to update user level" });
   }
 });
-  app.post('/api/nfts', upload.single('image'), async (req: Request, res: Response) => {
+
+app.post('/api/nfts', upload.single('image'), async (req: Request, res: Response) => {
 
      
     try {
