@@ -942,6 +942,7 @@ const listedVolume = await NFT.aggregate([
         activeAuctions,
         totalExhibitions,
         activeExhibitions,
+        level:user.level
       });
     } catch (error) {
       console.error('Error getting stats:', error);
