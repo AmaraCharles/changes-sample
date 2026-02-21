@@ -14,7 +14,7 @@ export interface IUser extends Document {
   website?: string;
   twitter?: string;
   instagram?: string;
-
+ level?: string;
   profileImage?: string | null;
 
   notifications: {
@@ -120,6 +120,10 @@ const UserSchema = new Schema<IUser>(
     },
 
     verificationCode: {
+      type: String,
+    },
+
+      level: {
       type: String,
     },
 

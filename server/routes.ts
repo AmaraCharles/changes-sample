@@ -336,7 +336,8 @@ app.get("/api/user/by-email/:email", async (req: Request, res: Response) => {
       email: dbUser.email,
       profileImage: dbUser.profileImage,
       balance: dbUser.walletBalance || 0,
-      wethBalance: dbUser.wethBalance || 0
+      wethBalance: dbUser.wethBalance || 0,
+      level:dbUser.level
     });
 
   } catch (error) {
@@ -1346,6 +1347,43 @@ app.get('/api/sales', async (req: Request, res: Response) => {
 });
 
 
+async function updateUserLevelByListings(userEmail: string) {
+  try {
+    // Count NFTs created by the user AND listed
+    const listedCount = await NFT.countDocuments({
+      creator: userEmail,
+      status: "listed"
+    });
+
+    let newLevel = 1;
+
+    if (listedCount <= 3) {
+      newLevel = 1;
+    } else if (listedCount <= 9) {
+      newLevel = 2;
+    } else if (listedCount <= 24) {
+      newLevel = 3;
+    } else if (listedCount <= 49) {
+      newLevel = 4;
+    } else {
+      newLevel = 5;
+    }
+
+    // Update user level in DB
+    await User.updateOne(
+      { email: userEmail },
+      { $set: { level: newLevel } }
+    );
+
+    return { listedCount, level: newLevel };
+  } catch (error) {
+    console.error("Level update error:", error);
+  }
+}
+
+
+
+
   app.post('/api/sales', async (req: Request, res: Response) => {
     try {
       const { nftId, price, currency } = req.body;
@@ -1387,6 +1425,9 @@ app.get('/api/sales', async (req: Request, res: Response) => {
       nft.currency = currency || 'ETH';
       await nft.save();
 
+
+      await updateUserLevelByListings(dbUser.email);
+      
       // Create transaction for sale listing
       await new Transaction({
         type: 'listed',
