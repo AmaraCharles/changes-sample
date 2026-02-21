@@ -1174,6 +1174,43 @@ app.get('/api/nfts/user', async (req: Request, res: Response) => {
     }
   });
 
+
+  
+async function updateUserLevelByListings(userEmail: string) {
+  try {
+    // Count NFTs created by the user AND listed
+    const listedCount = await NFT.countDocuments({
+      creator: userEmail,
+      status: "owned"
+    });
+
+    let newLevel = 1;
+
+    if (listedCount <= 3) {
+      newLevel = 1;
+    } else if (listedCount <= 9) {
+      newLevel = 2;
+    } else if (listedCount <= 24) {
+      newLevel = 3;
+    } else if (listedCount <= 49) {
+      newLevel = 4;
+    } else {
+      newLevel = 5;
+    }
+
+    // Update user level in DB
+    await User.updateOne(
+      { email: userEmail },
+      { $set: { level: newLevel } }
+    );
+
+    return { listedCount, level: newLevel };
+  } catch (error) {
+    console.error("Level update error:", error);
+  }
+}
+
+
   app.post('/api/nfts', upload.single('image'), async (req: Request, res: Response) => {
 
      
@@ -1249,6 +1286,7 @@ app.get('/api/nfts/user', async (req: Request, res: Response) => {
       });
 
       await nft.save();
+ await updateUserLevelByListings(dbUser.email);
 
       // NFT saved successfully - now deduct the minting fee
       dbUser.walletBalance = currentBalance - MINTING_FEE;
@@ -1347,40 +1385,6 @@ app.get('/api/sales', async (req: Request, res: Response) => {
 });
 
 
-async function updateUserLevelByListings(userEmail: string) {
-  try {
-    // Count NFTs created by the user AND listed
-    const listedCount = await NFT.countDocuments({
-      creator: userEmail,
-      status: "listed"
-    });
-
-    let newLevel = 1;
-
-    if (listedCount <= 3) {
-      newLevel = 1;
-    } else if (listedCount <= 9) {
-      newLevel = 2;
-    } else if (listedCount <= 24) {
-      newLevel = 3;
-    } else if (listedCount <= 49) {
-      newLevel = 4;
-    } else {
-      newLevel = 5;
-    }
-
-    // Update user level in DB
-    await User.updateOne(
-      { email: userEmail },
-      { $set: { level: newLevel } }
-    );
-
-    return { listedCount, level: newLevel };
-  } catch (error) {
-    console.error("Level update error:", error);
-  }
-}
-
 
 
 
@@ -1426,8 +1430,7 @@ async function updateUserLevelByListings(userEmail: string) {
       await nft.save();
 
 
-      await updateUserLevelByListings(dbUser.email);
-
+     
       // Create transaction for sale listing
       await new Transaction({
         type: 'listed',
