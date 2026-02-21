@@ -1224,7 +1224,7 @@ app.get("/api/user/update-level", async (req: Request, res: Response) => {
 
     // Count NFTs created by user with correct status
     const listedCount = await NFT.countDocuments({
-      creator: userEmail,
+      creator: dbUser.username,
       status:"owned", // adjust to your real statuses
     });
 
