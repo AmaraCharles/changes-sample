@@ -363,6 +363,7 @@ const emUser = await User.findOne({ email }).select("email");
       return res.json({
         profileImage: dbUser.profileImage,
         email:emUser.email,
+        _id:emUser._id
       });
     } catch (error) {
       console.error(error);
