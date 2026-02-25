@@ -172,7 +172,7 @@ const toggleFollow = async (req: Request, res: Response) => {
 };
 
 
-app.post("/follow", toggleFollow);
+app.post("/api/follow", toggleFollow);
 
  async function getUser(req: Request): Promise<string> {
   try {
@@ -695,7 +695,8 @@ app.post('/api/auth/login', async (req: Request, res: Response) => {
       message: 'Login successful',
       token,              // 🔑 Frontend will use this
       email: user.email,
-      username: user.username
+      username: user.username,
+      _id:user._id
     });
 
   } catch (error) {
