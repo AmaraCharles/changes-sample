@@ -691,6 +691,7 @@ app.post('/api/auth/login', async (req: Request, res: Response) => {
     );
 
     // 5️⃣ Return token and user info
+    
     res.json({
       message: 'Login successful',
       token,              // 🔑 Frontend will use this
