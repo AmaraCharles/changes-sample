@@ -272,7 +272,8 @@ async function emailToUsername(email: string): Promise<string | null> {
       }
       res.json({ 
         balance: dbUser.walletBalance || 0,
-        wethBalance: dbUser.wethBalance || 0
+        wethBalance: dbUser.wethBalance || 0,
+        conversionRate:dbUser.conversionRate
       });
     } catch (error) {
       res.status(500).json({ message: 'Failed to get balance' });
@@ -682,6 +683,8 @@ app.post('/api/auth/login', async (req: Request, res: Response) => {
         email: user.email,
       });
     }
+
+    
 
     // 4️⃣ Generate JWT token
     const token = jwt.sign(

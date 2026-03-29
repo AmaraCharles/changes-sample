@@ -10,6 +10,7 @@ export interface IUser extends Document {
 
   following: Types.ObjectId[];
   followers: Types.ObjectId[];
+   conversionRate: Types.ObjectId[];
 
   website?: string;
   twitter?: string;
@@ -72,6 +73,13 @@ const UserSchema = new Schema<IUser>(
 
     // ✅ Added followers & following
     following: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        default: [],
+      },
+    ],
+      conversionRate: [
       {
         type: Schema.Types.ObjectId,
         ref: "User",
