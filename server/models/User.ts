@@ -10,7 +10,7 @@ export interface IUser extends Document {
 
   following: Types.ObjectId[];
   followers: Types.ObjectId[];
-   conversionRate: Types.ObjectId[];
+  conversionRate: number[];
 
   website?: string;
   twitter?: string;
@@ -79,13 +79,10 @@ const UserSchema = new Schema<IUser>(
         default: [],
       },
     ],
-      conversionRate: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-        default: [],
-      },
-    ],
+    conversionRate: {
+  type: [Number],
+  default: [],
+},
 
     followers: [
       {
