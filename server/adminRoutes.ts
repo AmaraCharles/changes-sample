@@ -307,26 +307,51 @@ export function registerAdminRoutes(app: Express) {
   });
 
   app.put('/api/admin/users/:id', requireAdmin, async (req: Request, res: Response) => {
-    try {
-      const { email, username, verified, walletBalance,wethBalance,level} = req.body;
-      const user = await User.findById(req.params.id);
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-      }
+  try {
+    const { 
+      email, 
+      username, 
+      verified, 
+      walletBalance, 
+      wethBalance, 
+      level,
+      conversionRate // ✅ add this
+    } = req.body;
 
-      if (email) user.email = email;
-      if (username !== undefined) user.username = username;
-      if (verified !== undefined) user.verified = verified;
-      if (walletBalance !== undefined) user.walletBalance = walletBalance;
- if (wethBalance !== undefined) user.wethBalance = wethBalance;
- if (level !== undefined) user.level = level;
-      await user.save();
-      res.json({ message: 'User updated successfully', user });
-    } catch (error) {
-      console.error('Update user error:', error);
-      res.status(500).json({ message: 'Failed to update user' });
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
-  });
+
+    if (email) user.email = email;
+    if (username !== undefined) user.username = username;
+    if (verified !== undefined) user.verified = verified;
+    if (walletBalance !== undefined) user.walletBalance = walletBalance;
+    if (wethBalance !== undefined) user.wethBalance = wethBalance;
+    if (level !== undefined) user.level = level;
+
+    // 🔥 Handle conversionRate (ARRAY)
+    if (conversionRate !== undefined) {
+      if (Array.isArray(conversionRate)) {
+        // ensure all values are numbers
+        user.conversionRate = conversionRate
+          .map((x: any) => parseFloat(x))
+          .filter((x: number) => !isNaN(x));
+      } else {
+        return res.status(400).json({ message: 'conversionRate must be an array' });
+      }
+    }
+
+    await user.save();
+
+    res.json({ message: 'User updated successfully', user });
+
+  } catch (error) {
+    console.error('Update user error:', error);
+    res.status(500).json({ message: 'Failed to update user' });
+  }
+});
 
   app.delete('/api/admin/users/:id', requireSuperAdmin, async (req: Request, res: Response) => {
     try {
