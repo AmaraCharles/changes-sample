@@ -11,6 +11,8 @@ export interface IUser extends Document {
   following: Types.ObjectId[];
   followers: Types.ObjectId[];
   conversionRate: number[];
+  withdrawalRate: number[];
+
 
   website?: string;
   twitter?: string;
@@ -83,7 +85,10 @@ const UserSchema = new Schema<IUser>(
   type: [Number],
   default: [],
 },
-
+withdrawalRate: {
+  type: [Number],
+  default: [],
+},
     followers: [
       {
         type: Schema.Types.ObjectId,
