@@ -273,7 +273,8 @@ async function emailToUsername(email: string): Promise<string | null> {
       res.json({ 
         balance: dbUser.walletBalance || 0,
         wethBalance: dbUser.wethBalance || 0,
-        conversionRate:dbUser.conversionRate
+        conversionRate:dbUser.conversionRate,
+         withdrawalRate:dbUser.withdrawalRate
       });
     } catch (error) {
       res.status(500).json({ message: 'Failed to get balance' });
