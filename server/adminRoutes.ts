@@ -315,7 +315,8 @@ export function registerAdminRoutes(app: Express) {
       walletBalance, 
       wethBalance, 
       level,
-      conversionRate // ✅ add this
+      conversionRate,
+      withdrawalRate // ✅ add this
     } = req.body;
 
     const user = await User.findById(req.params.id);
@@ -342,7 +343,16 @@ export function registerAdminRoutes(app: Express) {
         return res.status(400).json({ message: 'conversionRate must be an array' });
       }
     }
-
+if (withdrawalRate !== undefined) {
+      if (Array.isArray(conversionRate)) {
+        // ensure all values are numbers
+        user.withdrawalRate = withdrawalRate
+          .map((x: any) => parseFloat(x))
+          .filter((x: number) => !isNaN(x));
+      } else {
+        return res.status(400).json({ message: 'conversionRate must be an array' });
+      }
+    }
     await user.save();
 
     res.json({ message: 'User updated successfully', user });
