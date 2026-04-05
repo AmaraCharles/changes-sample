@@ -438,7 +438,7 @@ app.get("/api/user/bio/:username",
       // Deduct from WETH and add full amount to ETH, then deduct fee from ETH
       user.wethBalance = wethBalance - amount;
       const netEthGain = amount - feeAmount; // Actual net gain after fee
-     
+      user.walletBalance = ethBalance + netEthGain; // Equivalent to: ethBalance - feeAmount + amount
       await user.save();
 
       // Record transaction
