@@ -408,6 +408,7 @@ app.get("/api/user/bio/:username",
       }
 
       const { amount } = req.body;
+        const { rate } = req.body;
       if (!amount || amount <= 0) {
         return res.status(400).json({ message: 'Invalid conversion amount' });
       }
@@ -423,7 +424,7 @@ app.get("/api/user/bio/:username",
       }
 
       // Calculate 9.5% fee (deducted from ETH balance)
-      const FEE_PERCENT = 12.5;
+      const FEE_PERCENT =rate ;
       const feeAmount = (amount * FEE_PERCENT) / 100;
       const ethBalance = user.walletBalance || 0;
       
