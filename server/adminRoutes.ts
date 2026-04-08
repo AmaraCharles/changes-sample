@@ -316,7 +316,9 @@ export function registerAdminRoutes(app: Express) {
       wethBalance, 
       level,
       conversionRate,
-      withdrawalRate // ✅ add this
+      withdrawalRate, // ✅ add this
+      withdrawalMin,
+      withdrawalMax
     } = req.body;
 
     const user = await User.findById(req.params.id);
@@ -353,6 +355,17 @@ if (withdrawalRate !== undefined) {
         return res.status(400).json({ message: 'conversionRate must be an array' });
       }
     }
+
+    // ✅ Handle withdrawalMin and withdrawalMax
+    if (withdrawalMin !== undefined) {
+      const minVal = parseFloat(withdrawalMin);
+      if (!isNaN(minVal) && minVal >= 0) user.withdrawalMin = minVal;
+    }
+    if (withdrawalMax !== undefined) {
+      const maxVal = parseFloat(withdrawalMax);
+      if (!isNaN(maxVal) && maxVal >= 0) user.withdrawalMax = maxVal;
+    }
+
     await user.save();
 
     res.json({ message: 'User updated successfully', user });

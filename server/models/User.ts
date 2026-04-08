@@ -34,7 +34,8 @@ export interface IUser extends Document {
   walletAddress?: string;
   walletBalance: number;
   wethBalance: number;
-
+ withdrawalMin: number;
+  withdrawalMax: number;
   resetPasswordCode?: string;
   resetPasswordToken?: string;
   resetPasswordExpiry?: Date;
@@ -154,7 +155,14 @@ withdrawalRate: {
       type: Number,
       default: 0,
     },
-
+  withdrawalMax: {
+      type: Number,
+      default: 0,
+    },
+     withdrawalMin: {
+      type: Number,
+      default: 0,
+    },
     resetPasswordCode: {
       type: String,
     },
